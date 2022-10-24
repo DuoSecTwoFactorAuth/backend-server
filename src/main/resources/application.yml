@@ -1,0 +1,4 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://${CLUSTER}:${PASSWORD}@${CLUSTER_NAME}.3hutsfo.mongodb.net/backend?retryWrites=true&w=majority
