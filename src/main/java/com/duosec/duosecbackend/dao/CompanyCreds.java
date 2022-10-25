@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @Data
 @Document("CompanyCreds")
-public class Registration {
+public class CompanyCreds {
     private String companyName;
     private String companyEmail;
     private int otpRefreshDuration;
