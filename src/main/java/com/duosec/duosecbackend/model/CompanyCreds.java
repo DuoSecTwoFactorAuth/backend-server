@@ -1,4 +1,4 @@
-package com.duosec.duosecbackend.dao;
+package com.duosec.duosecbackend.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,9 +16,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("CompanyCreds")
 public class CompanyCreds {
     private String companyName;
-    private String companyEmail;
+    private String companyEmailId;
     private int otpRefreshDuration;
     private String algorithm;
     private String password;
-
+    private String companyUniqueId;
 }

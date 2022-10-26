@@ -58,7 +58,7 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/swagger-resources" + Endpoints.ALL,
                         "/swagger-ui" + Endpoints.ALL,
                         "/webjars" + Endpoints.ALL,
-                        /* Probably not needed */ "/swagger.json"
+                        /* Probably not needed */ "/swagger.json", Endpoints.AUTH + Endpoints.ALL
                 ).permitAll().
                 anyRequest().authenticated().and().
                 exceptionHandling().and().sessionManagement()
