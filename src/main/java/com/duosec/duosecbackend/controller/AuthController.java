@@ -1,6 +1,7 @@
 package com.duosec.duosecbackend.controller;
 
 import com.duosec.duosecbackend.dto.CompanyRegister;
+import com.duosec.duosecbackend.dto.CompanyRegisterComplete;
 import com.duosec.duosecbackend.model.CompanyCreds;
 import com.duosec.duosecbackend.service.AuthService;
 import com.duosec.duosecbackend.utils.Endpoints;
@@ -40,15 +41,24 @@ public class AuthController {
     public ResponseEntity<?> companyRegistration(@RequestParam String uniqueId) {
         try {
             CompanyCreds companyCreds = authService.getCompanyDetails(uniqueId);
-            if (companyCreds != null) {
+            if (companyCreds != null)
                 return new ResponseEntity<>(new CompanyRegister(companyCreds.getCompanyName(), companyCreds.getCompanyEmailId()), HttpStatus.OK);
-            } else {
-                ErrorResponse errorResponse = new ErrorResponse();
-                errorResponse.setMessage("Mail already verified");
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_ACCEPTABLE);
-            }
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setMessage("Mail already verified");
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_ACCEPTABLE);
         } catch (Exception ex) {
             ex.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/store-company-details")
+    public ResponseEntity<String> storeCompanyDetails(@RequestBody CompanyRegisterComplete companyRegisterComplete) {
+        try {
+            if (authService.storeDetails(companyRegisterComplete))
+                return new ResponseEntity<>("Data Stored", HttpStatus.OK);
+            return new ResponseEntity<>("Data Not Stored", HttpStatus.NOT_ACCEPTABLE);
+        } catch (Exception ex) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }

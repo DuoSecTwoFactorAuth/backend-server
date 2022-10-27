@@ -2,6 +2,7 @@ package com.duosec.duosecbackend.service;
 
 import com.duosec.duosecbackend.dao.AuthModel;
 import com.duosec.duosecbackend.dto.CompanyRegister;
+import com.duosec.duosecbackend.dto.CompanyRegisterComplete;
 import com.duosec.duosecbackend.model.CompanyCreds;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,5 +48,17 @@ public class AuthService {
         companyCreds.setCompanyUniqueId(companyCreds.getId().toString());
         authModel.save(companyCreds);
         return companyCreds.getId();
+    }
+
+    public boolean storeDetails(CompanyRegisterComplete companyRegisterComplete) {
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyRegisterComplete.getCompanyUniqueId()).get();
+        if (companyCreds.getCompanyUniqueId().equals(companyRegisterComplete.getCompanyUniqueId()) && companyCreds.isCompanyMailVerified()) {
+            companyCreds.setAlgorithm(companyRegisterComplete.getAlgorithm());
+            companyCreds.setOtpRefreshDuration(companyRegisterComplete.getOtpRefreshDuration());
+            companyCreds.setPassword(companyRegisterComplete.getPassword());
+            authModel.save(companyCreds);
+            return true;
+        }
+        return false;
     }
 }
