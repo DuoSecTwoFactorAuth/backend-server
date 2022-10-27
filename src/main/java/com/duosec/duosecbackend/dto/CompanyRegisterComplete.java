@@ -17,4 +17,5 @@ public class CompanyRegisterComplete {
     private int otpRefreshDuration;
     private String algorithm;
     private String password;
+    private String companyUniqueId;
 }
