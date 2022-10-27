@@ -16,8 +16,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @Document("CompanyCreds")
 public class CompanyCreds {
-    ObjectId id;
 
+    private ObjectId id;
     private String companyName;
     private String companyEmailId;
     private int otpRefreshDuration;
