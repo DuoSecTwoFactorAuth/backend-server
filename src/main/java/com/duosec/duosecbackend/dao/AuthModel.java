@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface AuthModel extends MongoRepository<CompanyCreds, Integer> {
     Optional<CompanyCreds> findByCompanyUniqueId(String uniqueId);
+
+    Optional<CompanyCreds> findByCompanyEmailId(String companyEmailId);
 }

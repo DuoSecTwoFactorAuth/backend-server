@@ -1,9 +1,12 @@
 package com.duosec.duosecbackend.service;
 
 import com.duosec.duosecbackend.dao.AuthModel;
+import com.duosec.duosecbackend.dto.CompanyLogin;
+import com.duosec.duosecbackend.dto.CompanyLoginVerify;
 import com.duosec.duosecbackend.dto.CompanyRegister;
 import com.duosec.duosecbackend.dto.CompanyRegisterComplete;
 import com.duosec.duosecbackend.model.CompanyCreds;
+import com.duosec.duosecbackend.utils.RandomOTP;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,5 +52,29 @@ public class AuthService {
             return true;
         }
         return false;
+    }
+
+    public String loginSentMail(CompanyLogin companyLogin) {
+        try {
+            CompanyCreds companyCreds = authModel.findByCompanyEmailId(companyLogin.getCompanyEmailId()).get();
+            String otp = new RandomOTP().getRandomNumberString();
+            companyCreds.setOtp(otp);
+            //        TODO: sent otp in mail
+            authModel.save(companyCreds);
+            return companyCreds.getCompanyUniqueId();
+        } catch (Exception ex) {
+            return ex.toString();
+        }
+    }
+
+    public int verifyOtp(CompanyLoginVerify companyLoginVerify) {
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyLoginVerify.getCompanyUniqueId()).get();
+        if (companyCreds.getOtp().equals(companyLoginVerify.getOtp())) {
+            companyCreds.setOtp("");
+            authModel.save(companyCreds);
+            return 1;
+        }
+        //        TODO: sent otp in mail
+        return 0;
     }
 }
