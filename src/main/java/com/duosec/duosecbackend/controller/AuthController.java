@@ -27,8 +27,7 @@ public class AuthController {
     @PostMapping("/company-register")
     public ResponseEntity<String> companyRegister(@RequestBody CompanyRegister companyRegister) {
         try {
-            Object uniqueId = authService.saveRegisterCompanyDetails(companyRegister);
-            System.out.println(uniqueId);
+            authService.saveRegisterCompanyDetails(companyRegister);
 //            TODO: Mail send service with unique ID
             return new ResponseEntity<>("Data Saved", HttpStatus.CREATED);
         } catch (Exception ex) {
@@ -41,11 +40,7 @@ public class AuthController {
     public ResponseEntity<?> companyRegistration(@RequestParam String uniqueId) {
         try {
             CompanyCreds companyCreds = authService.getCompanyDetails(uniqueId);
-            if (companyCreds != null)
-                return new ResponseEntity<>(new CompanyRegister(companyCreds.getCompanyName(), companyCreds.getCompanyEmailId()), HttpStatus.OK);
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setMessage("Mail already verified");
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(new CompanyRegister(companyCreds.getCompanyName(), companyCreds.getCompanyEmailId()), HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -57,9 +52,11 @@ public class AuthController {
         try {
             if (authService.storeDetails(companyRegisterComplete))
                 return new ResponseEntity<>("Data Stored", HttpStatus.OK);
-            return new ResponseEntity<>("Data Not Stored", HttpStatus.NOT_ACCEPTABLE);
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setMessage("Mail already verified");
+            return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NO_CONTENT);
         } catch (Exception ex) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
         }
     }
 }

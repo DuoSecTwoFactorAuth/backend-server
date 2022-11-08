@@ -8,9 +8,7 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * User: Avinash Vijayvargiya
@@ -24,24 +22,14 @@ public class AuthService {
     private AuthModel authModel;
 
     public CompanyCreds getCompanyDetails(String uniqueId) {
-        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(uniqueId).get();
-        if (!companyCreds.isCompanyMailVerified()) {
-            companyCreds.setCompanyMailVerified(true);
-            authModel.save(companyCreds);
-            return companyCreds;
-        }
-        return null;
+        return authModel.findByCompanyUniqueId(uniqueId).get();
     }
+
 
     public ObjectId saveRegisterCompanyDetails(CompanyRegister companyRegister) {
         CompanyCreds companyCreds = new CompanyCreds();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        companyCreds.setCreateDate(sdf.format(c.getTime()));
-        c.add(Calendar.DATE, 7);
-
-        companyCreds.setExpireDate(sdf.format(c.getTime()));
+        companyCreds.setCreateDate(LocalDateTime.now());
+        companyCreds.setExpireDate(LocalDateTime.now().plusMinutes(1));
         companyCreds.setCompanyName(companyRegister.getCompanyName());
         companyCreds.setCompanyEmailId(companyRegister.getCompanyEmailId());
         authModel.save(companyCreds);
@@ -52,10 +40,11 @@ public class AuthService {
 
     public boolean storeDetails(CompanyRegisterComplete companyRegisterComplete) {
         CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyRegisterComplete.getCompanyUniqueId()).get();
-        if (companyCreds.getCompanyUniqueId().equals(companyRegisterComplete.getCompanyUniqueId()) && companyCreds.isCompanyMailVerified()) {
+        if (companyCreds.getCompanyUniqueId().equals(companyRegisterComplete.getCompanyUniqueId()) && !companyCreds.isCompanyMailVerified()) {
             companyCreds.setAlgorithm(companyRegisterComplete.getAlgorithm());
             companyCreds.setOtpRefreshDuration(companyRegisterComplete.getOtpRefreshDuration());
             companyCreds.setPassword(companyRegisterComplete.getPassword());
+            companyCreds.setCompanyMailVerified(true);
             authModel.save(companyCreds);
             return true;
         }

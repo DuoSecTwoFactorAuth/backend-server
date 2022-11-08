@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 /**
  * User: Avinash Vijayvargiya
  * Date: 25-Oct-22
@@ -24,7 +26,7 @@ public class CompanyCreds {
     private String algorithm;
     private String password;
     private String companyUniqueId;
-    private String createDate;
-    private String expireDate;
+    private LocalDateTime createDate;
+    private LocalDateTime expireDate;
     private boolean companyMailVerified;
 }
