@@ -7,4 +7,5 @@ package com.duosec.duosecbackend.utils;
  */
 public class Endpoints {
     public static final String ALL = "/**";
+    public static final String AUTH = "/auth";
 }
