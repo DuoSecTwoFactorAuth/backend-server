@@ -29,4 +29,5 @@ public class CompanyCreds {
     private LocalDateTime createDate;
     private LocalDateTime expireDate;
     private boolean companyMailVerified;
+    private String otp;
 }
