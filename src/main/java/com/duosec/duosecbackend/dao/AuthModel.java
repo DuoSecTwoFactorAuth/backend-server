@@ -11,4 +11,6 @@ public interface AuthModel extends MongoRepository<CompanyCreds, Integer> {
     Optional<CompanyCreds> findByCompanyUniqueId(String uniqueId);
 
     Optional<CompanyCreds> findByCompanyEmailId(String companyEmailId);
+
+    CompanyCreds findByToken(String token);
 }
