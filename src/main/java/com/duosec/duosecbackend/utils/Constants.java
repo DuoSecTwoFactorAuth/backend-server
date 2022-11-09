@@ -6,5 +6,6 @@ package com.duosec.duosecbackend.utils;
  * Time: 4:25 PM
  */
 public class Constants {
+    public static final String BEARER_AUTH = "bearerAuth";
     public static final long EXPIRE_TOKEN_AFTER_MINUTES = 30;
 }

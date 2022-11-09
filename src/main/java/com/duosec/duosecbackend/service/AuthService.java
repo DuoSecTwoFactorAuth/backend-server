@@ -1,11 +1,10 @@
 package com.duosec.duosecbackend.service;
 
 import com.duosec.duosecbackend.dao.AuthModel;
-import com.duosec.duosecbackend.dto.CompanyLogin;
-import com.duosec.duosecbackend.dto.CompanyLoginVerify;
-import com.duosec.duosecbackend.dto.CompanyRegister;
-import com.duosec.duosecbackend.dto.CompanyRegisterComplete;
+import com.duosec.duosecbackend.dto.*;
 import com.duosec.duosecbackend.model.CompanyCreds;
+import com.duosec.duosecbackend.security.jwt.JwtGenerator;
+import com.duosec.duosecbackend.security.model.JwtUser;
 import com.duosec.duosecbackend.utils.RandomOTP;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,9 @@ public class AuthService {
 
     @Autowired
     private AuthModel authModel;
+
+    @Autowired
+    private JwtGenerator jwtGenerator;
 
     public CompanyCreds getCompanyDetails(String uniqueId) {
         return authModel.findByCompanyUniqueId(uniqueId).get();
@@ -72,15 +74,20 @@ public class AuthService {
         }
     }
 
-    public int verifyOtp(CompanyLoginVerify companyLoginVerify) {
+    public AuthResponse sendJwt(CompanyCreds companyCreds) {
+        String token = jwtGenerator.generate(new JwtUser(companyCreds.getCompanyName(), "COMPANY_ADMIN"));
+        return new AuthResponse(companyCreds.getCompanyName(), token);
+    }
+
+    public AuthResponse verifyOtp(CompanyLoginVerify companyLoginVerify) {
         CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyLoginVerify.getCompanyUniqueId()).get();
         if (companyCreds.getOtp().equals(companyLoginVerify.getOtp())) {
             companyCreds.setOtp("");
             authModel.save(companyCreds);
-            return 1;
+            return sendJwt(companyCreds);
         }
         //        TODO: sent otp in mail
-        return 0;
+        return new AuthResponse();
     }
 
     public String forgotPassword(String email) {

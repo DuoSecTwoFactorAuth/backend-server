@@ -1,9 +1,6 @@
 package com.duosec.duosecbackend.controller;
 
-import com.duosec.duosecbackend.dto.CompanyLogin;
-import com.duosec.duosecbackend.dto.CompanyLoginVerify;
-import com.duosec.duosecbackend.dto.CompanyRegister;
-import com.duosec.duosecbackend.dto.CompanyRegisterComplete;
+import com.duosec.duosecbackend.dto.*;
 import com.duosec.duosecbackend.model.CompanyCreds;
 import com.duosec.duosecbackend.service.AuthService;
 import com.duosec.duosecbackend.utils.Endpoints;
@@ -75,10 +72,9 @@ public class AuthController {
     }
 
     @PostMapping("/verify-login")
-    public ResponseEntity<String> verifyLogin(@RequestBody CompanyLoginVerify companyLoginVerify) {
+    public ResponseEntity<AuthResponse> verifyLogin(@RequestBody CompanyLoginVerify companyLoginVerify) {
         try {
-            int response = authService.verifyOtp(companyLoginVerify);
-            return response == 1 ? new ResponseEntity<>("Login kardo", HttpStatus.ACCEPTED) : new ResponseEntity<>("login maat karo", HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(authService.verifyOtp(companyLoginVerify), HttpStatus.ACCEPTED);
         } catch (Exception ex) {
             return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
         }
