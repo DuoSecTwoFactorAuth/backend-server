@@ -52,17 +52,8 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf().disable()
-                .authorizeRequests().antMatchers(
-                        "/v3" + Endpoints.ALL,
-                        "/swagger-resources" + Endpoints.ALL,
-                        "/swagger-ui" + Endpoints.ALL,
-                        "/webjars" + Endpoints.ALL,
-                        /* Probably not needed */ "/swagger.json", Endpoints.AUTH + Endpoints.ALL
-                ).permitAll().
-                anyRequest().authenticated().and().
-                exceptionHandling().and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        httpSecurity.csrf().disable().authorizeRequests().antMatchers("/v3" + Endpoints.ALL, "/swagger-resources" + Endpoints.ALL, "/swagger-ui" + Endpoints.ALL, "/webjars" + Endpoints.ALL,
+                /* Probably not needed */ "/swagger.json", Endpoints.AUTH + Endpoints.ALL, Endpoints.SETTINGS + Endpoints.ALL).permitAll().anyRequest().authenticated().and().exceptionHandling().and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         httpSecurity.addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }
