@@ -83,4 +83,29 @@ public class AuthController {
             return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
         }
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        try {
+            String response = authService.forgotPassword(email);
+            if (!response.startsWith("Invalid")) {
+//                response = Constants.FRONTEND_URL + "?token=" + response;
+                return new ResponseEntity<>("Token Sent" + response, HttpStatus.OK);
+            }
+            return new ResponseEntity<>("Company Not Found", HttpStatus.NOT_FOUND);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestParam String password) {
+        try {
+            return new ResponseEntity<>(authService.resetPassword(token, password), HttpStatus.ACCEPTED);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return new ResponseEntity<>("", HttpStatus.NOT_MODIFIED);
+        }
+    }
 }

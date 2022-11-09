@@ -11,7 +11,12 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+
+import static com.duosec.duosecbackend.utils.Constants.EXPIRE_TOKEN_AFTER_MINUTES;
 
 /**
  * User: Avinash Vijayvargiya
@@ -76,5 +81,46 @@ public class AuthService {
         }
         //        TODO: sent otp in mail
         return 0;
+    }
+
+    public String forgotPassword(String email) {
+        Optional<CompanyCreds> userOptional = authModel.findByCompanyEmailId(email);
+        if (userOptional.isEmpty()) {
+            return "Invalid email id.";
+        }
+        CompanyCreds companyCreds = userOptional.get();
+        companyCreds.setToken(generateToken());
+        companyCreds.setTokenCreationDate(String.valueOf(LocalDateTime.now()));
+        companyCreds = authModel.save(companyCreds);
+//        mailService.sendEmail(email, userOptional.get().getName(), Constants.FORGET_PASSWORD_SUBJECT, Constants.HELLO + Constants.FORGET_PASSWORD_BODY + " " + Constants.FRONTEND_URL + user.getToken());
+        return companyCreds.getToken();
+    }
+
+    private String generateToken() {
+        return String.valueOf(UUID.randomUUID()) +
+                UUID.randomUUID();
+    }
+
+    private boolean isTokenExpired(final LocalDateTime tokenCreationDate) {
+        LocalDateTime now = LocalDateTime.now();
+        Duration diff = Duration.between(tokenCreationDate, now);
+        return diff.toMinutes() >= EXPIRE_TOKEN_AFTER_MINUTES;
+    }
+
+    public String resetPassword(String token, String password) {
+        Optional<CompanyCreds> userOptional = Optional.ofNullable(authModel.findByToken(token));
+        if (userOptional.isEmpty()) {
+            return "Invalid token.";
+        }
+        LocalDateTime tokenCreationDate = LocalDateTime.parse(userOptional.get().getTokenCreationDate());
+        if (isTokenExpired(tokenCreationDate)) {
+            return "Token expired.";
+        }
+        CompanyCreds companyCreds = userOptional.get();
+        companyCreds.setPassword(password);
+        companyCreds.setToken(null);
+        companyCreds.setTokenCreationDate(null);
+        authModel.save(companyCreds);
+        return "Your password successfully updated.";
     }
 }
