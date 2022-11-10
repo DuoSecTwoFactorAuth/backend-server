@@ -20,10 +20,10 @@ public class SettingService {
     private AuthModel authModel;
 
     public boolean changePassword(ChangePasswordModel model) {
-        return updateStudentPassword(model.getCompanyUniqueId(), model.getNewPassword(), model.getOldPassword());
+        return updatePassword(model.getCompanyUniqueId(), model.getNewPassword(), model.getOldPassword());
     }
 
-    private boolean updateStudentPassword(String companyUniqueId, String newPassword, String oldPassword) {
+    private boolean updatePassword(String companyUniqueId, String newPassword, String oldPassword) {
         CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyUniqueId).get();
         if (Objects.equals(companyCreds.getPassword(), oldPassword)) {
             companyCreds.setPassword(newPassword);

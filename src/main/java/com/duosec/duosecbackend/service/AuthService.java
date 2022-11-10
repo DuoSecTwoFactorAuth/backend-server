@@ -6,7 +6,6 @@ import com.duosec.duosecbackend.model.CompanyCreds;
 import com.duosec.duosecbackend.security.jwt.JwtGenerator;
 import com.duosec.duosecbackend.security.model.JwtUser;
 import com.duosec.duosecbackend.utils.RandomOTP;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +30,13 @@ public class AuthService {
     @Autowired
     private JwtGenerator jwtGenerator;
 
-    public CompanyCreds getCompanyDetails(String uniqueId) {
-        return authModel.findByCompanyUniqueId(uniqueId).get();
+    public CompanyRegister getCompanyDetails(String uniqueId) {
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(uniqueId).get();
+        return new CompanyRegister(companyCreds.getCompanyName(), companyCreds.getCompanyEmailId());
     }
 
 
-    public ObjectId saveRegisterCompanyDetails(CompanyRegister companyRegister) {
+    public void saveRegisterCompanyDetails(CompanyRegister companyRegister) {
         CompanyCreds companyCreds = new CompanyCreds();
         companyCreds.setCreateDate(LocalDateTime.now());
         companyCreds.setExpireDate(LocalDateTime.now().plusMinutes(1));
@@ -45,12 +45,12 @@ public class AuthService {
         authModel.save(companyCreds);
         companyCreds.setCompanyUniqueId(companyCreds.getId().toString());
         authModel.save(companyCreds);
-        return companyCreds.getId();
     }
 
     public boolean storeDetails(CompanyRegisterComplete companyRegisterComplete) {
         CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyRegisterComplete.getCompanyUniqueId()).get();
-        if (companyCreds.getCompanyUniqueId().equals(companyRegisterComplete.getCompanyUniqueId()) && !companyCreds.isCompanyMailVerified()) {
+        if (companyCreds.getCompanyUniqueId().equals(companyRegisterComplete.getCompanyUniqueId())
+                && !companyCreds.isCompanyMailVerified()) {
             companyCreds.setAlgorithm(companyRegisterComplete.getAlgorithm());
             companyCreds.setOtpRefreshDuration(companyRegisterComplete.getOtpRefreshDuration());
             companyCreds.setPassword(companyRegisterComplete.getPassword());
@@ -64,6 +64,7 @@ public class AuthService {
     public String loginSentMail(CompanyLogin companyLogin) {
         try {
             CompanyCreds companyCreds = authModel.findByCompanyEmailId(companyLogin.getCompanyEmailId()).get();
+//            TODO: Add Password Verification
             String otp = new RandomOTP().getRandomNumberString();
             companyCreds.setOtp(otp);
             //        TODO: sent otp in mail
@@ -82,7 +83,7 @@ public class AuthService {
     public AuthResponse verifyOtp(CompanyLoginVerify companyLoginVerify) {
         CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyLoginVerify.getCompanyUniqueId()).get();
         if (companyCreds.getOtp().equals(companyLoginVerify.getOtp())) {
-            companyCreds.setOtp("");
+            companyCreds.setOtp(null);
             authModel.save(companyCreds);
             return sendJwt(companyCreds);
         }

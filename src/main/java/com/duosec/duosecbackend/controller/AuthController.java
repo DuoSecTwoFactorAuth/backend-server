@@ -1,7 +1,6 @@
 package com.duosec.duosecbackend.controller;
 
 import com.duosec.duosecbackend.dto.*;
-import com.duosec.duosecbackend.model.CompanyCreds;
 import com.duosec.duosecbackend.service.AuthService;
 import com.duosec.duosecbackend.utils.Endpoints;
 import com.duosec.duosecbackend.utils.ErrorResponse;
@@ -36,10 +35,9 @@ public class AuthController {
     }
 
     @GetMapping("/get-company-details")
-    public ResponseEntity<?> companyRegistration(@RequestParam String uniqueId) {
+    public ResponseEntity<CompanyRegister> companyRegistration(@RequestParam String uniqueId) {
         try {
-            CompanyCreds companyCreds = authService.getCompanyDetails(uniqueId);
-            return new ResponseEntity<>(new CompanyRegister(companyCreds.getCompanyName(), companyCreds.getCompanyEmailId()), HttpStatus.OK);
+            return new ResponseEntity<>(authService.getCompanyDetails(uniqueId), HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
