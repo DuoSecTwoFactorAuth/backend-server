@@ -62,7 +62,8 @@ public class AuthController {
     public ResponseEntity<String> login(@RequestBody CompanyLogin companyLogin) {
         try {
             String response = authService.loginSentMail(companyLogin);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return response != null ? new ResponseEntity<>(response, HttpStatus.OK) :
+                    new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
         } catch (Exception ex) {
             ex.printStackTrace();
             return new ResponseEntity<>("", HttpStatus.INTERNAL_SERVER_ERROR);

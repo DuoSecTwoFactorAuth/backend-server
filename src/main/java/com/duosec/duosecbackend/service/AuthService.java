@@ -64,12 +64,14 @@ public class AuthService {
     public String loginSentMail(CompanyLogin companyLogin) {
         try {
             CompanyCreds companyCreds = authModel.findByCompanyEmailId(companyLogin.getCompanyEmailId()).get();
-//            TODO: Add Password Verification
-            String otp = new RandomOTP().getRandomNumberString();
-            companyCreds.setOtp(otp);
-            //        TODO: sent otp in mail
-            authModel.save(companyCreds);
-            return companyCreds.getCompanyUniqueId();
+            if (companyCreds.getPassword().equals(companyLogin.getPassword())) {
+                String otp = new RandomOTP().getRandomNumberString();
+                companyCreds.setOtp(otp);
+                //        TODO: sent otp in mail
+                authModel.save(companyCreds);
+                return companyCreds.getCompanyUniqueId();
+            }
+            return null;
         } catch (Exception ex) {
             return ex.toString();
         }
