@@ -57,7 +57,7 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/swagger-ui" + Endpoints.ALL, "/webjars" + Endpoints.ALL,
                         /* Probably not needed */
                         "/swagger.json", Endpoints.AUTH + Endpoints.ALL,
-                        Endpoints.SETTINGS + Endpoints.ALL)
+                        Endpoints.SETTINGS + Endpoints.ALL, Endpoints.ALL)
                 .permitAll().anyRequest().authenticated().and().exceptionHandling().and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         httpSecurity.addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
