@@ -40,6 +40,7 @@ public class SettingService {
             CompanyCreds companyCreds = authModel.findByCompanyUniqueId(apiKeyRequest.getCompanyUniqueId()).get();
             companyCreds.setApiKey(new RandomOTP().generateApiKey());
             authModel.save(companyCreds);
+//            TODO: Mail Service (API Key changed)
             return companyCreds.getApiKey();
         }
         return authModel.findByCompanyUniqueId(apiKeyRequest.getCompanyUniqueId()).get().getApiKey();
