@@ -55,6 +55,7 @@ public class AuthService {
             companyCreds.setOtpRefreshDuration(companyRegisterComplete.getOtpRefreshDuration());
             companyCreds.setPassword(companyRegisterComplete.getPassword());
             companyCreds.setCompanyMailVerified(true);
+            companyCreds.setApiKey(new RandomOTP().generateApiKey());
             authModel.save(companyCreds);
             return true;
         }

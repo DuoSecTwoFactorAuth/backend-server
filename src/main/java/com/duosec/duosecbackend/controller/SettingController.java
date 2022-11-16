@@ -1,8 +1,11 @@
 package com.duosec.duosecbackend.controller;
 
+import com.duosec.duosecbackend.dto.ApiKeyRequest;
+import com.duosec.duosecbackend.dto.ApiKeyResponse;
 import com.duosec.duosecbackend.dto.ChangePasswordModel;
 import com.duosec.duosecbackend.service.SettingService;
 import com.duosec.duosecbackend.utils.Endpoints;
+import com.duosec.duosecbackend.utils.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,17 @@ public class SettingController {
             return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/get-api-key")
+    public ResponseEntity<ApiKeyResponse> getApiKey(@RequestBody ApiKeyRequest apiKeyRequest) {
+        try {
+            return new ResponseEntity<>(new ApiKeyResponse(settingService.getApiKey(apiKeyRequest)), HttpStatus.OK);
+        } catch (Exception ex) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setMessage("Error");
+            return new ResponseEntity<>(new ApiKeyResponse(), HttpStatus.NOT_FOUND);
         }
     }
 }

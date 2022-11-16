@@ -32,4 +32,5 @@ public class CompanyCreds {
     private String otp;
     private String token;
     private String tokenCreationDate;
+    private String apiKey;
 }
