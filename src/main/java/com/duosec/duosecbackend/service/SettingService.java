@@ -1,8 +1,10 @@
 package com.duosec.duosecbackend.service;
 
 import com.duosec.duosecbackend.dao.AuthModel;
+import com.duosec.duosecbackend.dto.ApiKeyRequest;
 import com.duosec.duosecbackend.dto.ChangePasswordModel;
 import com.duosec.duosecbackend.model.CompanyCreds;
+import com.duosec.duosecbackend.utils.RandomOTP;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +17,6 @@ import java.util.Objects;
  */
 @Service
 public class SettingService {
-
     @Autowired
     private AuthModel authModel;
 
@@ -32,5 +33,16 @@ public class SettingService {
             return true;
         }
         return false;
+    }
+
+    public String getApiKey(ApiKeyRequest apiKeyRequest) {
+        if (apiKeyRequest.isGenerateApiKey()) {
+            CompanyCreds companyCreds = authModel.findByCompanyUniqueId(apiKeyRequest.getCompanyUniqueId()).get();
+            companyCreds.setApiKey(new RandomOTP().generateApiKey());
+            authModel.save(companyCreds);
+//            TODO: Mail Service (API Key changed)
+            return companyCreds.getApiKey();
+        }
+        return authModel.findByCompanyUniqueId(apiKeyRequest.getCompanyUniqueId()).get().getApiKey();
     }
 }
