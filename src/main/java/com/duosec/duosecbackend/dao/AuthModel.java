@@ -17,4 +17,7 @@ public interface AuthModel extends MongoRepository<CompanyCreds, Integer> {
 
     @Query("{token :  ?0}")
     CompanyCreds findByToken(String token);
+
+    @Query("{apiKey :  ?0}")
+    CompanyCreds findByApiKey(String companyApiKey);
 }

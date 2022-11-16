@@ -1,6 +1,7 @@
 package com.duosec.duosecbackend.controller;
 
 import com.duosec.duosecbackend.dto.AddEmployeeData;
+import com.duosec.duosecbackend.dto.AddEmployeeDataAPI;
 import com.duosec.duosecbackend.service.DashboardService;
 import com.duosec.duosecbackend.utils.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +23,21 @@ public class DashboardController {
     @Autowired
     private DashboardService dashboardService;
 
-    @PostMapping("/addEmployee")
+    @PostMapping("/addEmployeeFromUI")
     public ResponseEntity<String> addEmployee(@RequestBody AddEmployeeData addEmployeeData) {
         try {
             return new ResponseEntity<>(dashboardService.addEmployee(addEmployeeData), HttpStatus.ACCEPTED);
+        } catch (Exception ex) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setMessage(ex.getMessage());
+            return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    @PostMapping("/addEmployee")
+    public ResponseEntity<String> addEmployee(@RequestBody AddEmployeeDataAPI addEmployeeDataAPI) {
+        try {
+            return new ResponseEntity<>(dashboardService.addEmployee(addEmployeeDataAPI), HttpStatus.ACCEPTED);
         } catch (Exception ex) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.setMessage(ex.getMessage());

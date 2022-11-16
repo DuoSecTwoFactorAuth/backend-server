@@ -1,7 +1,9 @@
 package com.duosec.duosecbackend.service;
 
+import com.duosec.duosecbackend.dao.AuthModel;
 import com.duosec.duosecbackend.dao.DashboardModel;
 import com.duosec.duosecbackend.dto.AddEmployeeData;
+import com.duosec.duosecbackend.dto.AddEmployeeDataAPI;
 import com.duosec.duosecbackend.model.CompanyEmployee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,9 @@ public class DashboardService {
     @Autowired
     private DashboardModel dashboardModel;
 
+    @Autowired
+    private AuthModel authModel;
+
 
     public String addEmployee(AddEmployeeData addEmployeeData) {
         CompanyEmployee companyEmployee = new CompanyEmployee(
@@ -25,6 +30,19 @@ public class DashboardService {
                 addEmployeeData.getName(),
                 addEmployeeData.getEmailId(),
                 addEmployeeData.getPhoneNumber());
+        dashboardModel.save(companyEmployee);
+        return "Data Saved";
+    }
+
+    public String addEmployee(AddEmployeeDataAPI addEmployeeDataAPI) {
+        String companyUniqueId = authModel.findByApiKey(addEmployeeDataAPI.getCompanyApiKey()).getCompanyUniqueId();
+        CompanyEmployee companyEmployee = new CompanyEmployee(
+                companyUniqueId,
+                addEmployeeDataAPI.getEmployeeId(),
+                addEmployeeDataAPI.getName(),
+                addEmployeeDataAPI.getEmailId(),
+                addEmployeeDataAPI.getEmailId()
+        );
         dashboardModel.save(companyEmployee);
         return "Data Saved";
     }
