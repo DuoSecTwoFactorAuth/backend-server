@@ -3,6 +3,7 @@ package com.duosec.duosecbackend.controller;
 import com.duosec.duosecbackend.dto.AddEmployeeData;
 import com.duosec.duosecbackend.dto.AddEmployeeDataAPI;
 import com.duosec.duosecbackend.dto.DeleteEmployeeData;
+import com.duosec.duosecbackend.dto.DeleteEmployeeDataAPI;
 import com.duosec.duosecbackend.service.DashboardService;
 import com.duosec.duosecbackend.utils.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class DashboardController {
     @Autowired
     private DashboardService dashboardService;
 
-    @PostMapping("/addEmployeeFromUI")
+    @PostMapping("/add-employee-from -ui")
     public ResponseEntity<String> addEmployee(@RequestBody AddEmployeeData addEmployeeData) {
         try {
             return new ResponseEntity<>(dashboardService.addEmployee(addEmployeeData), HttpStatus.ACCEPTED);
@@ -36,7 +37,7 @@ public class DashboardController {
         }
     }
 
-    @PostMapping("/addEmployee")
+    @PostMapping("/add-employee")
     public ResponseEntity<String> addEmployee(@RequestBody AddEmployeeDataAPI addEmployeeDataAPI) {
         try {
             return new ResponseEntity<>(dashboardService.addEmployee(addEmployeeDataAPI), HttpStatus.ACCEPTED);
@@ -47,14 +48,25 @@ public class DashboardController {
         }
     }
 
-    @DeleteMapping("/deleteEmployee")
-    public ResponseEntity<String> deleteEmployee(@RequestBody DeleteEmployeeData deleteEmployeeData) {
+    @DeleteMapping("/delete-employee-from -ui")
+    public ResponseEntity<String> deleteEmployeeFromUi(@RequestBody DeleteEmployeeData deleteEmployeeData) {
         try {
             return new ResponseEntity<>(dashboardService.deleteEmployee(deleteEmployeeData), HttpStatus.ACCEPTED);
         } catch (Exception ex) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.setMessage(ex.getMessage());
             return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("delete-employee")
+    public ResponseEntity<String> deleteEmployee(@RequestBody DeleteEmployeeDataAPI deleteEmployeeDataAPI) {
+        try {
+            return new ResponseEntity<>(dashboardService.deleteEmployee(deleteEmployeeDataAPI), HttpStatus.ACCEPTED);
+        } catch (Exception ex) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setMessage(ex.getMessage());
+            return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NOT_ACCEPTABLE);
         }
     }
 }
