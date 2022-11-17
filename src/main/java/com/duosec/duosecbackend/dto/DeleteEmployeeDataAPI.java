@@ -7,12 +7,13 @@ import lombok.NoArgsConstructor;
 /**
  * User: Avinash Vijayvargiya
  * Date: 17-Nov-22
- * Time: 1:51 AM
+ * Time: 7:18 PM
  */
+
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class DeleteEmployeeData {
-    private String companyUniqueId;
+public class DeleteEmployeeDataAPI {
+    private String apiKey;
     private String employeeId;
 }

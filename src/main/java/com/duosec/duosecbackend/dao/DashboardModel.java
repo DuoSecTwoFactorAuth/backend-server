@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DashboardModel extends MongoRepository<CompanyEmployee, String> {
-    @Query(value = "{employeeId :  ?0}", delete = true)
-    void deleteByEmployeeId(String employeeId);
+    @Query(value = "{$and :[{employeeId :  ?0}, {companyUniqueId: ?1}]}", delete = true)
+    void deleteByEmployeeIdAAndCompanyUniqueId(String employeeId, String companyUniqueId);
 }
