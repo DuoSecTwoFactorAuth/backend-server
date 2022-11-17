@@ -4,6 +4,7 @@ import com.duosec.duosecbackend.dao.AuthModel;
 import com.duosec.duosecbackend.dao.DashboardModel;
 import com.duosec.duosecbackend.dto.AddEmployeeData;
 import com.duosec.duosecbackend.dto.AddEmployeeDataAPI;
+import com.duosec.duosecbackend.dto.DeleteEmployeeData;
 import com.duosec.duosecbackend.model.CompanyEmployee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,5 +46,10 @@ public class DashboardService {
         );
         dashboardModel.save(companyEmployee);
         return "Data Saved";
+    }
+
+    public String deleteEmployee(DeleteEmployeeData deleteEmployeeData) {
+        dashboardModel.deleteByEmployeeId(deleteEmployeeData.getEmployeeId());
+        return "Data Deleted";
     }
 }
