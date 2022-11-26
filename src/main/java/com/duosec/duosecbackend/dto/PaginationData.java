@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * User: Avinash Vijayvargiya
  * Date: 24-Nov-22
@@ -13,10 +15,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaginationData {
+    @NotNull
     private String companyUniqueId;
     private String employeeName;
     private String sortBy;
     private int page;
     private int size;
-    private Boolean sort;
+    private boolean sort;
 }

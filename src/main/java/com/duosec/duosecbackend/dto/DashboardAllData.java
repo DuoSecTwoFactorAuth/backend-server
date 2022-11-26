@@ -16,5 +16,5 @@ public class DashboardAllData {
     private String employeeId;
     private String name;
     private String emailId;
-    private String contactNumber;
+    private String phoneNumber;
 }

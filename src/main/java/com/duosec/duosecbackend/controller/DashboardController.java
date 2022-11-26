@@ -70,19 +70,15 @@ public class DashboardController {
     }
 
     @PostMapping("/get-all-employee")
-    public ResponseEntity<Map<String, Object>> getAllEmployee(@RequestBody PaginationData paginationData) {
+    public ResponseEntity<?> getAllEmployee(@RequestBody PaginationData paginationData) {
         try {
-            Map<String, Object> objectMap = dashboardService.getAllEmployee(
-                    paginationData.getCompanyUniqueId(),
-                    paginationData.getEmployeeName(),
-                    paginationData.getPage(),
-                    paginationData.getSize(),
-                    paginationData.getSortBy(),
-                    paginationData.getSort());
+            Map<String, Object> objectMap = dashboardService.getAllEmployee(paginationData.getCompanyUniqueId(), paginationData.getEmployeeName(), paginationData.getPage(), paginationData.getSize(), paginationData.getSortBy(), paginationData.isSort());
             return new ResponseEntity<>(objectMap, HttpStatus.OK);
         } catch (Exception ex) {
+            if (ex.getMessage().equals("Null Company Unique Id"))
+                return new ResponseEntity<>(ex.toString(), HttpStatus.NOT_ACCEPTABLE);
             ex.printStackTrace();
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
