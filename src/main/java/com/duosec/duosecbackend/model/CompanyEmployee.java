@@ -21,14 +21,14 @@ public class CompanyEmployee {
     private String emailId;
     private String phoneNumber;
     private String secret;
-    private String renew;
-    private String dateAdded;
+    private long createDate;
 
-    public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber) {
+    public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber, long createDate) {
         this.companyUniqueId = companyUniqueId;
         this.employeeId = employeeId;
         this.name = name;
         this.emailId = emailId;
         this.phoneNumber = phoneNumber;
+        this.createDate = createDate;
     }
 }

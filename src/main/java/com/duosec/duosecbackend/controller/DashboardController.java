@@ -1,9 +1,6 @@
 package com.duosec.duosecbackend.controller;
 
-import com.duosec.duosecbackend.dto.AddEmployeeData;
-import com.duosec.duosecbackend.dto.AddEmployeeDataAPI;
-import com.duosec.duosecbackend.dto.DeleteEmployeeData;
-import com.duosec.duosecbackend.dto.DeleteEmployeeDataAPI;
+import com.duosec.duosecbackend.dto.*;
 import com.duosec.duosecbackend.service.DashboardService;
 import com.duosec.duosecbackend.utils.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +10,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 /**
  * User: Avinash Vijayvargiya
@@ -67,6 +66,19 @@ public class DashboardController {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.setMessage(ex.getMessage());
             return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    @PostMapping("/get-all-employee")
+    public ResponseEntity<?> getAllEmployee(@RequestBody PaginationData paginationData) {
+        try {
+            Map<String, Object> objectMap = dashboardService.getAllEmployee(paginationData.getCompanyUniqueId(), paginationData.getEmployeeName(), paginationData.getPage(), paginationData.getSize(), paginationData.getSortBy(), paginationData.isSort());
+            return new ResponseEntity<>(objectMap, HttpStatus.OK);
+        } catch (Exception ex) {
+            if (ex.getMessage().equals("Null Company Unique Id"))
+                return new ResponseEntity<>(ex.toString(), HttpStatus.NOT_ACCEPTABLE);
+            ex.printStackTrace();
+            return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
