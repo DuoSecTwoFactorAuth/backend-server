@@ -1,8 +1,10 @@
 package com.duosec.duosecbackend.controller;
 
 import com.duosec.duosecbackend.dto.*;
+import com.duosec.duosecbackend.exception.DataException;
+import com.duosec.duosecbackend.exception.EmptyDataException;
+import com.duosec.duosecbackend.exception.NullDataException;
 import com.duosec.duosecbackend.service.DashboardService;
-import com.duosec.duosecbackend.utils.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +31,10 @@ public class DashboardController {
     public ResponseEntity<String> addEmployee(@RequestBody AddEmployeeData addEmployeeData) {
         try {
             return new ResponseEntity<>(dashboardService.addEmployee(addEmployeeData), HttpStatus.ACCEPTED);
-        } catch (Exception ex) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setMessage(ex.getMessage());
-            return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NOT_ACCEPTABLE);
+        } catch (NullDataException | EmptyDataException | DataException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_MODIFIED);
+        } catch (RuntimeException runtimeException) {
+            return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -40,10 +42,10 @@ public class DashboardController {
     public ResponseEntity<String> addEmployee(@RequestBody AddEmployeeDataAPI addEmployeeDataAPI) {
         try {
             return new ResponseEntity<>(dashboardService.addEmployee(addEmployeeDataAPI), HttpStatus.ACCEPTED);
-        } catch (Exception ex) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setMessage(ex.getMessage());
-            return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NOT_ACCEPTABLE);
+        } catch (NullDataException | EmptyDataException | DataException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_MODIFIED);
+        } catch (RuntimeException runtimeException) {
+            return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -51,10 +53,10 @@ public class DashboardController {
     public ResponseEntity<String> deleteEmployeeFromUi(@RequestBody DeleteEmployeeData deleteEmployeeData) {
         try {
             return new ResponseEntity<>(dashboardService.deleteEmployee(deleteEmployeeData), HttpStatus.ACCEPTED);
-        } catch (Exception ex) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setMessage(ex.getMessage());
-            return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NOT_FOUND);
+        } catch (NullDataException | EmptyDataException | DataException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_MODIFIED);
+        } catch (RuntimeException runtimeException) {
+            return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -62,10 +64,10 @@ public class DashboardController {
     public ResponseEntity<String> deleteEmployee(@RequestBody DeleteEmployeeDataAPI deleteEmployeeDataAPI) {
         try {
             return new ResponseEntity<>(dashboardService.deleteEmployee(deleteEmployeeDataAPI), HttpStatus.ACCEPTED);
-        } catch (Exception ex) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setMessage(ex.getMessage());
-            return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NOT_ACCEPTABLE);
+        } catch (NullDataException | EmptyDataException | DataException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_MODIFIED);
+        } catch (RuntimeException runtimeException) {
+            return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -74,10 +76,11 @@ public class DashboardController {
         try {
             Map<String, Object> objectMap = dashboardService.getAllEmployee(paginationData.getCompanyUniqueId(), paginationData.getEmployeeName(), paginationData.getPage(), paginationData.getSize(), paginationData.getSortBy(), paginationData.isSort());
             return new ResponseEntity<>(objectMap, HttpStatus.OK);
+        } catch (NullDataException exception) {
+            throw new NullDataException("Data can't be Null");
+        } catch (EmptyDataException exception) {
+            throw new EmptyDataException("Data can't be Empty");
         } catch (Exception ex) {
-            if (ex.getMessage().equals("Null Company Unique Id"))
-                return new ResponseEntity<>(ex.toString(), HttpStatus.NOT_ACCEPTABLE);
-            ex.printStackTrace();
             return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
