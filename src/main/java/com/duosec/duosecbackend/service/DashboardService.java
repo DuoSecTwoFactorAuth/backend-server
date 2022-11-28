@@ -3,7 +3,10 @@ package com.duosec.duosecbackend.service;
 import com.duosec.duosecbackend.dao.AuthModel;
 import com.duosec.duosecbackend.dao.DashboardModel;
 import com.duosec.duosecbackend.dto.*;
+import com.duosec.duosecbackend.model.CompanyCreds;
 import com.duosec.duosecbackend.model.CompanyEmployee;
+import com.duosec.duosecbackend.utils.CreateJwtToken;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.duosec.backendlibrary.SecretGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,6 +15,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,32 +39,44 @@ public class DashboardService {
     private AuthModel authModel;
 
 
-    public String addEmployee(AddEmployeeData addEmployeeData) {
+    public void addEmployee(AddEmployeeData addEmployeeData) {
         byte[] secret = SecretGenerator.generate();
+        LocalDateTime date = LocalDateTime.now();
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(addEmployeeData.getCompanyUniqueId()).get();
+        String employeeUniqueIdHex = DigestUtils.sha256Hex(companyCreds.getCompanyUniqueId() + addEmployeeData.getEmployeeId());
+        CreateJwtToken createJwtToken = new CreateJwtToken();
+        String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
+                companyCreds.getAlgorithm());
         CompanyEmployee companyEmployee = new CompanyEmployee(
                 addEmployeeData.getCompanyUniqueId(),
                 addEmployeeData.getEmployeeId(),
                 addEmployeeData.getName(),
                 addEmployeeData.getEmailId(),
                 addEmployeeData.getPhoneNumber(),
-                System.currentTimeMillis(), secret);
+                date, secret, employeeUniqueIdHex, jwtToken);
         dashboardModel.save(companyEmployee);
-        return secret.toString();
     }
 
     public String addEmployee(AddEmployeeDataAPI addEmployeeDataAPI) {
         byte[] secret = SecretGenerator.generate();
+        LocalDateTime date = LocalDateTime.now();
         String companyUniqueId = authModel.findByApiKey(addEmployeeDataAPI.getCompanyApiKey()).getCompanyUniqueId();
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyUniqueId).get();
+        String employeeUniqueIdHex = DigestUtils.sha256Hex(companyCreds.getCompanyUniqueId() + addEmployeeDataAPI.getEmployeeId());
+        CreateJwtToken createJwtToken = new CreateJwtToken();
+        String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
+                companyCreds.getAlgorithm());
         CompanyEmployee companyEmployee = new CompanyEmployee(
                 companyUniqueId,
                 addEmployeeDataAPI.getEmployeeId(),
                 addEmployeeDataAPI.getName(),
                 addEmployeeDataAPI.getEmailId(),
                 addEmployeeDataAPI.getPhoneNumber(),
-                System.currentTimeMillis(),
-                secret);
+                date,
+                secret, employeeUniqueIdHex, jwtToken);
         dashboardModel.save(companyEmployee);
         return "Data Saved";
+//        TODO Send mail to the user
     }
 
     public String deleteEmployee(DeleteEmployeeData deleteEmployeeData) {
@@ -113,5 +132,14 @@ public class DashboardService {
         response.put("totalPages", companyEmployeePage.getTotalPages());
 
         return response;
+    }
+
+    public String getQrData(String companyEmployeeHash) {
+        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeUniqueIdHex(companyEmployeeHash);
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+
+        if (Duration.between(today, companyEmployee.getSecretTime()).toMillis() > 0)
+            return null;
+        return companyEmployee.getEmployeeUniqueIdHex();
     }
 }

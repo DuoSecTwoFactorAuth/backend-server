@@ -16,4 +16,6 @@ public interface DashboardModel extends MongoRepository<CompanyEmployee, String>
     Page<CompanyEmployee> findAllByNameAndCompanyUniqueId(String name, String companyUniqueId, Pageable page);
 
     Page<CompanyEmployee> findAllByCompanyUniqueId(String companyUniqueId, Pageable pageable);
+
+    CompanyEmployee findByEmployeeUniqueIdHex(String hash);
 }
