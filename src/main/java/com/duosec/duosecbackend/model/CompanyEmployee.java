@@ -20,15 +20,16 @@ public class CompanyEmployee {
     private String name;
     private String emailId;
     private String phoneNumber;
-    private String secret;
+    private byte[] secret;
     private long createDate;
 
-    public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber, long createDate) {
+    public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber, long createDate, byte[] secret) {
         this.companyUniqueId = companyUniqueId;
         this.employeeId = employeeId;
         this.name = name;
         this.emailId = emailId;
         this.phoneNumber = phoneNumber;
         this.createDate = createDate;
+        this.secret = secret;
     }
 }

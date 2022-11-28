@@ -4,6 +4,7 @@ import com.duosec.duosecbackend.dao.AuthModel;
 import com.duosec.duosecbackend.dao.DashboardModel;
 import com.duosec.duosecbackend.dto.*;
 import com.duosec.duosecbackend.model.CompanyEmployee;
+import org.duosec.backendlibrary.SecretGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,14 +33,29 @@ public class DashboardService {
 
 
     public String addEmployee(AddEmployeeData addEmployeeData) {
-        CompanyEmployee companyEmployee = new CompanyEmployee(addEmployeeData.getCompanyUniqueId(), addEmployeeData.getEmployeeId(), addEmployeeData.getName(), addEmployeeData.getEmailId(), addEmployeeData.getPhoneNumber(), System.currentTimeMillis());
+        byte[] secret = SecretGenerator.generate();
+        CompanyEmployee companyEmployee = new CompanyEmployee(
+                addEmployeeData.getCompanyUniqueId(),
+                addEmployeeData.getEmployeeId(),
+                addEmployeeData.getName(),
+                addEmployeeData.getEmailId(),
+                addEmployeeData.getPhoneNumber(),
+                System.currentTimeMillis(), secret);
         dashboardModel.save(companyEmployee);
-        return "Data Saved";
+        return secret.toString();
     }
 
     public String addEmployee(AddEmployeeDataAPI addEmployeeDataAPI) {
+        byte[] secret = SecretGenerator.generate();
         String companyUniqueId = authModel.findByApiKey(addEmployeeDataAPI.getCompanyApiKey()).getCompanyUniqueId();
-        CompanyEmployee companyEmployee = new CompanyEmployee(companyUniqueId, addEmployeeDataAPI.getEmployeeId(), addEmployeeDataAPI.getName(), addEmployeeDataAPI.getEmailId(), addEmployeeDataAPI.getPhoneNumber(), System.currentTimeMillis());
+        CompanyEmployee companyEmployee = new CompanyEmployee(
+                companyUniqueId,
+                addEmployeeDataAPI.getEmployeeId(),
+                addEmployeeDataAPI.getName(),
+                addEmployeeDataAPI.getEmailId(),
+                addEmployeeDataAPI.getPhoneNumber(),
+                System.currentTimeMillis(),
+                secret);
         dashboardModel.save(companyEmployee);
         return "Data Saved";
     }
