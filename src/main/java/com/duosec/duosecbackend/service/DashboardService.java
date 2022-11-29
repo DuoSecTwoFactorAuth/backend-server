@@ -3,8 +3,11 @@ package com.duosec.duosecbackend.service;
 import com.duosec.duosecbackend.dao.AuthModel;
 import com.duosec.duosecbackend.dao.DashboardModel;
 import com.duosec.duosecbackend.dto.*;
+import com.duosec.duosecbackend.model.CompanyCreds;
 import com.duosec.duosecbackend.model.CompanyEmployee;
+import org.duosec.backendlibrary.HMACAlgorithm;
 import org.duosec.backendlibrary.SecretGenerator;
+import org.duosec.backendlibrary.TOTP;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,10 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.util.*;
 
 /**
  * User: Avinash Vijayvargiya
@@ -113,5 +114,30 @@ public class DashboardService {
         response.put("totalPages", companyEmployeePage.getTotalPages());
 
         return response;
+    }
+
+    public Boolean verifyTOTP(String companyId, String employeeId, String totp) {
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyId).get();
+        byte[] secret = dashboardModel.findByEmployeeIdAndCompanyUniqueId(employeeId, companyId).get().getSecret();
+
+        TOTP.Builder builder = new TOTP.Builder(secret);
+        String algorithm = companyCreds.getAlgorithm();
+
+        HMACAlgorithm algo;
+        if (Objects.equals(algorithm, "SHA1"))
+            algo = HMACAlgorithm.SHA1;
+        else if (Objects.equals(algorithm, "SHA256"))
+            algo = HMACAlgorithm.SHA256;
+        else
+            algo = HMACAlgorithm.SHA512;
+
+        builder
+                .withPasswordLength(6)
+                .withAlgorithm(algo)
+                .withPeriod(Duration.ofSeconds(companyCreds.getOtpRefreshDuration() * 60));
+
+        TOTP totpObj = builder.build();
+
+        return totpObj.verify(totp, 2);
     }
 }
