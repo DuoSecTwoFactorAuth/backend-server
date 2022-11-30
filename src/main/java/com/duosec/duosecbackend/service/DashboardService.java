@@ -8,6 +8,7 @@ import com.duosec.duosecbackend.exception.EmptyDataException;
 import com.duosec.duosecbackend.exception.NullDataException;
 import com.duosec.duosecbackend.model.CompanyEmployee;
 import com.duosec.duosecbackend.utils.ExtensionFunction;
+import org.duosec.backendlibrary.SecretGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,56 +35,32 @@ public class DashboardService {
     @Autowired
     private AuthModel authModel;
 
-
-    public String addEmployee(AddEmployeeData addEmployeeData) throws NullDataException, EmptyDataException, DataException {
-        ExtensionFunction extensionFunction = new ExtensionFunction();
-        if (extensionFunction.isNull(addEmployeeData.getCompanyUniqueId()) ||
-                extensionFunction.isNull(addEmployeeData.getEmployeeId()) ||
-                extensionFunction.isNull(addEmployeeData.getPhoneNumber()) ||
-                extensionFunction.isNull(addEmployeeData.getName()) ||
-                extensionFunction.isNull(addEmployeeData.getEmailId()))
-            throw new NullDataException("CompanyUniqueId, EmployeeId, PhoneNumber, Name, EmailId can't be Null");
-
-        if (addEmployeeData.getCompanyUniqueId().isEmpty() ||
-                addEmployeeData.getEmployeeId().isEmpty() ||
-                addEmployeeData.getPhoneNumber().isEmpty() ||
-                addEmployeeData.getName().isEmpty() ||
-                addEmployeeData.getEmailId().isEmpty())
-            throw new NullDataException("CompanyUniqueId, EmployeeId, PhoneNumber, Name, EmailId can't be Empty");
-
-        try {
-            CompanyEmployee companyEmployee = new CompanyEmployee(addEmployeeData.getCompanyUniqueId(), addEmployeeData.getEmployeeId(), addEmployeeData.getName(), addEmployeeData.getEmailId(), addEmployeeData.getPhoneNumber(), System.currentTimeMillis());
-            dashboardModel.save(companyEmployee);
-            return "Data Saved";
-        } catch (DataException dataException) {
-            throw new DataException("Data Not Saved");
-        }
+    public String addEmployee(AddEmployeeData addEmployeeData) {
+        byte[] secret = SecretGenerator.generate();
+        CompanyEmployee companyEmployee = new CompanyEmployee(
+                addEmployeeData.getCompanyUniqueId(),
+                addEmployeeData.getEmployeeId(),
+                addEmployeeData.getName(),
+                addEmployeeData.getEmailId(),
+                addEmployeeData.getPhoneNumber(),
+                System.currentTimeMillis(), secret);
+        dashboardModel.save(companyEmployee);
+        return secret.toString();
     }
 
-    public String addEmployee(AddEmployeeDataAPI addEmployeeDataAPI) throws NullDataException, EmptyDataException, DataException {
-        ExtensionFunction extensionFunction = new ExtensionFunction();
-        if (extensionFunction.isNull(addEmployeeDataAPI.getCompanyApiKey()) ||
-                extensionFunction.isNull(addEmployeeDataAPI.getEmployeeId()) ||
-                extensionFunction.isNull(addEmployeeDataAPI.getPhoneNumber()) ||
-                extensionFunction.isNull(addEmployeeDataAPI.getName()) ||
-                extensionFunction.isNull(addEmployeeDataAPI.getEmailId()))
-            throw new NullDataException("CompanyUniqueId, EmployeeId, PhoneNumber, Name, EmailId can't be Null");
-
-        if (addEmployeeDataAPI.getCompanyApiKey().isEmpty() ||
-                addEmployeeDataAPI.getEmployeeId().isEmpty() ||
-                addEmployeeDataAPI.getPhoneNumber().isEmpty() ||
-                addEmployeeDataAPI.getName().isEmpty() ||
-                addEmployeeDataAPI.getEmailId().isEmpty())
-            throw new NullDataException("CompanyUniqueId, EmployeeId, PhoneNumber, Name, EmailId can't be Empty");
-
-        try {
-            String companyUniqueId = authModel.findByApiKey(addEmployeeDataAPI.getCompanyApiKey()).getCompanyUniqueId();
-            CompanyEmployee companyEmployee = new CompanyEmployee(companyUniqueId, addEmployeeDataAPI.getEmployeeId(), addEmployeeDataAPI.getName(), addEmployeeDataAPI.getEmailId(), addEmployeeDataAPI.getPhoneNumber(), System.currentTimeMillis());
-            dashboardModel.save(companyEmployee);
-            return "Data Saved";
-        } catch (DataException dataException) {
-            throw new DataException("Data Not Saved");
-        }
+    public String addEmployee(AddEmployeeDataAPI addEmployeeDataAPI) {
+        byte[] secret = SecretGenerator.generate();
+        String companyUniqueId = authModel.findByApiKey(addEmployeeDataAPI.getCompanyApiKey()).getCompanyUniqueId();
+        CompanyEmployee companyEmployee = new CompanyEmployee(
+                companyUniqueId,
+                addEmployeeDataAPI.getEmployeeId(),
+                addEmployeeDataAPI.getName(),
+                addEmployeeDataAPI.getEmailId(),
+                addEmployeeDataAPI.getPhoneNumber(),
+                System.currentTimeMillis(),
+                secret);
+        dashboardModel.save(companyEmployee);
+        return "Data Saved";
     }
 
     public String deleteEmployee(DeleteEmployeeData deleteEmployeeData) throws NullDataException, EmptyDataException, DataException {
