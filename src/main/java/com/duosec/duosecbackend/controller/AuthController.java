@@ -1,9 +1,11 @@
 package com.duosec.duosecbackend.controller;
 
 import com.duosec.duosecbackend.dto.*;
+import com.duosec.duosecbackend.exception.CompanyNotFoundException;
+import com.duosec.duosecbackend.exception.EmptyDataException;
+import com.duosec.duosecbackend.exception.NullDataException;
 import com.duosec.duosecbackend.service.AuthService;
 import com.duosec.duosecbackend.utils.Endpoints;
-import com.duosec.duosecbackend.utils.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +30,10 @@ public class AuthController {
             authService.saveRegisterCompanyDetails(companyRegister);
 //            TODO: Mail send service with unique ID
             return new ResponseEntity<>("Data Saved", HttpStatus.CREATED);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return new ResponseEntity<>("Data Not Saved", HttpStatus.NOT_ACCEPTABLE);
+        } catch (EmptyDataException | NullDataException ex) {
+            return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_ACCEPTABLE);
+        } catch (RuntimeException runtimeException) {
+            return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -49,12 +52,11 @@ public class AuthController {
         try {
             if (authService.storeDetails(companyRegisterComplete))
                 return new ResponseEntity<>("Data Stored", HttpStatus.OK);
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setMessage("Mail already verified");
-            return new ResponseEntity<>(errorResponse.toString(), HttpStatus.NO_CONTENT);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>("Data Not Stored", HttpStatus.NOT_MODIFIED);
+        } catch (EmptyDataException | NullDataException ex) {
+            throw ex;
+        } catch (RuntimeException runtimeException) {
+            return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.NOT_ACCEPTABLE);
         }
     }
 
@@ -87,20 +89,22 @@ public class AuthController {
 //                response = Constants.FRONTEND_URL + "?token=" + response;
                 return new ResponseEntity<>("Token Sent" + response, HttpStatus.OK);
             }
-            return new ResponseEntity<>("Company Not Found", HttpStatus.NOT_FOUND);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
+            throw new CompanyNotFoundException("Company not found");
+        } catch (RuntimeException runtimeException) {
+            runtimeException.printStackTrace();
+            return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestParam String password) {
+    public ResponseEntity<String> resetPassword(@RequestBody RestPassword restPassword) {
         try {
-            return new ResponseEntity<>(authService.resetPassword(token, password), HttpStatus.ACCEPTED);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return new ResponseEntity<>("", HttpStatus.NOT_MODIFIED);
+            return new ResponseEntity<>(authService.resetPassword(restPassword.getToken(), restPassword.getPassword()), HttpStatus.ACCEPTED);
+        } catch (NullDataException | EmptyDataException ex) {
+            throw ex;
+        } catch (RuntimeException runtimeException) {
+            runtimeException.printStackTrace();
+            return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

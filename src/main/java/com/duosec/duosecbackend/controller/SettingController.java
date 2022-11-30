@@ -3,9 +3,11 @@ package com.duosec.duosecbackend.controller;
 import com.duosec.duosecbackend.dto.ApiKeyRequest;
 import com.duosec.duosecbackend.dto.ApiKeyResponse;
 import com.duosec.duosecbackend.dto.ChangePasswordModel;
+import com.duosec.duosecbackend.exception.CompanyNotFoundException;
+import com.duosec.duosecbackend.exception.EmptyDataException;
+import com.duosec.duosecbackend.exception.NullDataException;
 import com.duosec.duosecbackend.service.SettingService;
 import com.duosec.duosecbackend.utils.Endpoints;
-import com.duosec.duosecbackend.utils.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +29,15 @@ public class SettingController {
     private SettingService settingService;
 
     @PostMapping("/change-password")
-    public ResponseEntity<HttpStatus> changePassword(@RequestBody ChangePasswordModel changePasswordModel) {
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordModel changePasswordModel) {
         try {
-            boolean status = settingService.changePassword(changePasswordModel);
-            if (status) return new ResponseEntity<>(HttpStatus.OK);
-            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            if (settingService.changePassword(changePasswordModel))
+                return new ResponseEntity<>(HttpStatus.OK);
+            throw new CompanyNotFoundException("Company not found");
+        } catch (NullDataException | EmptyDataException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_MODIFIED);
+        } catch (RuntimeException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -41,10 +45,12 @@ public class SettingController {
     public ResponseEntity<ApiKeyResponse> getApiKey(@RequestBody ApiKeyRequest apiKeyRequest) {
         try {
             return new ResponseEntity<>(new ApiKeyResponse(settingService.getApiKey(apiKeyRequest)), HttpStatus.OK);
-        } catch (Exception ex) {
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setMessage("Error");
-            return new ResponseEntity<>(new ApiKeyResponse(), HttpStatus.NOT_FOUND);
+        } catch (NullDataException nullDataException) {
+            throw new NullDataException("ApiKeyRequest can't be Null");
+        } catch (EmptyDataException emptyDataException) {
+            throw new EmptyDataException("ApiKeyRequest can't be Null");
+        } catch (RuntimeException runtimeException) {
+            throw new RuntimeException();
         }
     }
 }
