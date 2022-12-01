@@ -86,7 +86,24 @@
             <version>1.11</version>
         </dependency>
 
+            <groupId>com.github.DuoSecTwoFactorAuth</groupId>
+            <artifactId>backend-library</artifactId>
+            <version>final-publish</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.pires</groupId>
+            <artifactId>obd-java-api</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
