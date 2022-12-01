@@ -77,7 +77,7 @@
         <dependency>
             <groupId>com.github.DuoSecTwoFactorAuth</groupId>
             <artifactId>backend-library</artifactId>
-            <version>publish</version>
+            <version>final-publish</version>
         </dependency>
 
         <dependency>

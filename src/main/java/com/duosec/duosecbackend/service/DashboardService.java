@@ -6,9 +6,12 @@ import com.duosec.duosecbackend.dto.*;
 import com.duosec.duosecbackend.exception.DataException;
 import com.duosec.duosecbackend.exception.EmptyDataException;
 import com.duosec.duosecbackend.exception.NullDataException;
+import com.duosec.duosecbackend.model.CompanyCreds;
 import com.duosec.duosecbackend.model.CompanyEmployee;
 import com.duosec.duosecbackend.utils.ExtensionFunction;
+import org.duosec.backendlibrary.HMACAlgorithm;
 import org.duosec.backendlibrary.SecretGenerator;
+import org.duosec.backendlibrary.TOTP;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -158,7 +161,7 @@ public class DashboardService {
         builder
                 .withPasswordLength(6)
                 .withAlgorithm(algo)
-                .withPeriod(Duration.ofSeconds(companyCreds.getOtpRefreshDuration() * 60));
+                .withPeriod(Duration.ofSeconds(companyCreds.getOtpRefreshDuration() * 60L));
 
         TOTP totpObj = builder.build();
 
