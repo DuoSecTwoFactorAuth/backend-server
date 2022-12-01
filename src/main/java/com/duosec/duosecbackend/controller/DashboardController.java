@@ -27,7 +27,8 @@ public class DashboardController {
     @PostMapping("/add-employee-from -ui")
     public ResponseEntity<String> addEmployee(@RequestBody AddEmployeeData addEmployeeData) {
         try {
-            return new ResponseEntity<>(dashboardService.addEmployee(addEmployeeData), HttpStatus.ACCEPTED);
+            dashboardService.addEmployee(addEmployeeData);
+            return new ResponseEntity<>("Employee Added", HttpStatus.ACCEPTED);
         } catch (NullDataException | EmptyDataException | DataException exception) {
             return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_MODIFIED);
         } catch (RuntimeException runtimeException) {
@@ -89,6 +90,9 @@ public class DashboardController {
         } catch (Exception ex) {
             ex.printStackTrace();
             return new ResponseEntity<>("No Data", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping("/verify-totp")
     public ResponseEntity<?> verifyTOTP(@RequestBody TOTPData totpData) {
         try {

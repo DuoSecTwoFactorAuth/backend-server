@@ -28,8 +28,6 @@ public class CompanyEmployee {
     private String jwtToken;
 
     public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber, LocalDateTime secretTime, byte[] secret, String employeeUniqueIdHex, String jwtToken) {
-
-    public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber, long createDate, byte[] secret) {
         this.companyUniqueId = companyUniqueId;
         this.employeeId = employeeId;
         this.name = name;

@@ -3,16 +3,15 @@ package com.duosec.duosecbackend.service;
 import com.duosec.duosecbackend.dao.AuthModel;
 import com.duosec.duosecbackend.dao.DashboardModel;
 import com.duosec.duosecbackend.dto.*;
-import com.duosec.duosecbackend.model.CompanyCreds;
-import com.duosec.duosecbackend.model.CompanyEmployee;
-import com.duosec.duosecbackend.utils.CreateJwtToken;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.duosec.backendlibrary.SecretGenerator;
-import org.duosec.backendlibrary.HMACAlgorithm;
 import com.duosec.duosecbackend.exception.DataException;
 import com.duosec.duosecbackend.exception.EmptyDataException;
 import com.duosec.duosecbackend.exception.NullDataException;
+import com.duosec.duosecbackend.model.CompanyCreds;
+import com.duosec.duosecbackend.model.CompanyEmployee;
+import com.duosec.duosecbackend.utils.CreateJwtToken;
 import com.duosec.duosecbackend.utils.ExtensionFunction;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.duosec.backendlibrary.HMACAlgorithm;
 import org.duosec.backendlibrary.SecretGenerator;
 import org.duosec.backendlibrary.TOTP;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 
@@ -167,8 +168,8 @@ public class DashboardService {
         if (Duration.between(today, companyEmployee.getSecretTime()).toMillis() > 0)
             return null;
         return companyEmployee.getEmployeeUniqueIdHex();
-        }
-        
+    }
+
     public Boolean verifyTOTP(String companyId, String employeeId, String totp) {
         CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyId).get();
         byte[] secret = dashboardModel.findByEmployeeIdAndCompanyUniqueId(employeeId, companyId).get().getSecret();
