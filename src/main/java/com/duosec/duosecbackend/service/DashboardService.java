@@ -3,13 +3,15 @@ package com.duosec.duosecbackend.service;
 import com.duosec.duosecbackend.dao.AuthModel;
 import com.duosec.duosecbackend.dao.DashboardModel;
 import com.duosec.duosecbackend.dto.*;
-import com.duosec.duosecbackend.model.CompanyCreds;
-import com.duosec.duosecbackend.model.CompanyEmployee;
-import org.duosec.backendlibrary.HMACAlgorithm;
 import com.duosec.duosecbackend.exception.DataException;
 import com.duosec.duosecbackend.exception.EmptyDataException;
 import com.duosec.duosecbackend.exception.NullDataException;
+import com.duosec.duosecbackend.model.CompanyCreds;
+import com.duosec.duosecbackend.model.CompanyEmployee;
+import com.duosec.duosecbackend.utils.CreateJwtToken;
 import com.duosec.duosecbackend.utils.ExtensionFunction;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.duosec.backendlibrary.HMACAlgorithm;
 import org.duosec.backendlibrary.SecretGenerator;
 import org.duosec.backendlibrary.TOTP;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
+
 
 /**
  * User: Avinash Vijayvargiya
@@ -36,32 +42,44 @@ public class DashboardService {
     @Autowired
     private AuthModel authModel;
 
-    public String addEmployee(AddEmployeeData addEmployeeData) {
+    public void addEmployee(AddEmployeeData addEmployeeData) {
         byte[] secret = SecretGenerator.generate();
+        LocalDateTime date = LocalDateTime.now();
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(addEmployeeData.getCompanyUniqueId()).get();
+        String employeeUniqueIdHex = DigestUtils.sha256Hex(companyCreds.getCompanyUniqueId() + addEmployeeData.getEmployeeId());
+        CreateJwtToken createJwtToken = new CreateJwtToken();
+        String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
+                companyCreds.getAlgorithm());
         CompanyEmployee companyEmployee = new CompanyEmployee(
                 addEmployeeData.getCompanyUniqueId(),
                 addEmployeeData.getEmployeeId(),
                 addEmployeeData.getName(),
                 addEmployeeData.getEmailId(),
                 addEmployeeData.getPhoneNumber(),
-                System.currentTimeMillis(), secret);
+                date, secret, employeeUniqueIdHex, jwtToken);
         dashboardModel.save(companyEmployee);
-        return secret.toString();
     }
 
     public String addEmployee(AddEmployeeDataAPI addEmployeeDataAPI) {
         byte[] secret = SecretGenerator.generate();
+        LocalDateTime date = LocalDateTime.now();
         String companyUniqueId = authModel.findByApiKey(addEmployeeDataAPI.getCompanyApiKey()).getCompanyUniqueId();
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyUniqueId).get();
+        String employeeUniqueIdHex = DigestUtils.sha256Hex(companyCreds.getCompanyUniqueId() + addEmployeeDataAPI.getEmployeeId());
+        CreateJwtToken createJwtToken = new CreateJwtToken();
+        String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
+                companyCreds.getAlgorithm());
         CompanyEmployee companyEmployee = new CompanyEmployee(
                 companyUniqueId,
                 addEmployeeDataAPI.getEmployeeId(),
                 addEmployeeDataAPI.getName(),
                 addEmployeeDataAPI.getEmailId(),
                 addEmployeeDataAPI.getPhoneNumber(),
-                System.currentTimeMillis(),
-                secret);
+                date,
+                secret, employeeUniqueIdHex, jwtToken);
         dashboardModel.save(companyEmployee);
         return "Data Saved";
+//        TODO Send mail to the user
     }
 
     public String deleteEmployee(DeleteEmployeeData deleteEmployeeData) throws NullDataException, EmptyDataException, DataException {
@@ -141,6 +159,15 @@ public class DashboardService {
         response.put("totalPages", companyEmployeePage.getTotalPages());
 
         return response;
+    }
+
+    public String getQrData(String companyEmployeeHash) {
+        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeUniqueIdHex(companyEmployeeHash);
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+
+        if (Duration.between(today, companyEmployee.getSecretTime()).toMillis() > 0)
+            return null;
+        return companyEmployee.getEmployeeUniqueIdHex();
     }
 
     public Boolean verifyTOTP(String companyId, String employeeId, String totp) {

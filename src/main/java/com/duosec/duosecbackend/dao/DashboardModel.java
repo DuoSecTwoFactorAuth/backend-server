@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface DashboardModel extends MongoRepository<CompanyEmployee, String> {
+
     @Query(value = "{$and :[{employeeId :  ?0}, {companyUniqueId: ?1}]}", delete = true)
     void deleteByEmployeeIdAAndCompanyUniqueId(String employeeId, String companyUniqueId);
 
@@ -19,5 +20,7 @@ public interface DashboardModel extends MongoRepository<CompanyEmployee, String>
 
     Page<CompanyEmployee> findAllByCompanyUniqueId(String companyUniqueId, Pageable pageable);
 
+    CompanyEmployee findByEmployeeUniqueIdHex(String hash);
+    
     Optional<CompanyEmployee> findByEmployeeIdAndCompanyUniqueId(String employeeId, String companyUniqueId);
 }

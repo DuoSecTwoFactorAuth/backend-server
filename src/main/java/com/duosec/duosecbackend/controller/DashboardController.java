@@ -8,10 +8,7 @@ import com.duosec.duosecbackend.service.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -30,7 +27,8 @@ public class DashboardController {
     @PostMapping("/add-employee-from -ui")
     public ResponseEntity<String> addEmployee(@RequestBody AddEmployeeData addEmployeeData) {
         try {
-            return new ResponseEntity<>(dashboardService.addEmployee(addEmployeeData), HttpStatus.ACCEPTED);
+            dashboardService.addEmployee(addEmployeeData);
+            return new ResponseEntity<>("Employee Added", HttpStatus.ACCEPTED);
         } catch (NullDataException | EmptyDataException | DataException exception) {
             return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_MODIFIED);
         } catch (RuntimeException runtimeException) {
@@ -82,6 +80,16 @@ public class DashboardController {
             throw new EmptyDataException("Data can't be Empty");
         } catch (Exception ex) {
             return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/get-qr-code")
+    public ResponseEntity<String> getQrCodeData(@RequestParam String companyEmployeeHash) {
+        try {
+            return new ResponseEntity<>(dashboardService.getQrData(companyEmployeeHash), HttpStatus.ACCEPTED);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return new ResponseEntity<>("No Data", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

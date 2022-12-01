@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 /**
  * User: Avinash Vijayvargiya
  * Date: 16-Nov-22
@@ -21,15 +23,19 @@ public class CompanyEmployee {
     private String emailId;
     private String phoneNumber;
     private byte[] secret;
-    private long createDate;
+    private LocalDateTime secretTime;
+    private String employeeUniqueIdHex;
+    private String jwtToken;
 
-    public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber, long createDate, byte[] secret) {
+    public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber, LocalDateTime secretTime, byte[] secret, String employeeUniqueIdHex, String jwtToken) {
         this.companyUniqueId = companyUniqueId;
         this.employeeId = employeeId;
         this.name = name;
         this.emailId = emailId;
         this.phoneNumber = phoneNumber;
-        this.createDate = createDate;
+        this.secretTime = secretTime;
         this.secret = secret;
+        this.employeeUniqueIdHex = employeeUniqueIdHex;
+        this.jwtToken = jwtToken;
     }
 }
