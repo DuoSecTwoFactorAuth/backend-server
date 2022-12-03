@@ -92,7 +92,7 @@ public class AuthService {
         CompanyCreds companyCreds = authModel.findByCompanyEmailId(companyLogin.getCompanyEmailId()).orElseThrow();
         if (companyCreds.getPassword().equals(companyLogin.getPassword())) {
             System.out.println("1");
-            return new AuthResponse(companyCreds.getCompanyName(), jwtGenerator.generate(new JwtUser(companyCreds.getCompanyName(), "COMPANY_ADMIN")));
+            return new AuthResponse(companyCreds.getCompanyName(), jwtGenerator.generate(new JwtUser(companyCreds.getCompanyUniqueId(), "COMPANY_ADMIN")));
         }
         throw new TokenExpiredException("Email Id or password not valid");
     }
