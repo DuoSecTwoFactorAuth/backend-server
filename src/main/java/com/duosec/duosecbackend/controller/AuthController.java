@@ -61,23 +61,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody CompanyLogin companyLogin) {
+    public ResponseEntity<AuthResponse> login(@RequestBody CompanyLogin companyLogin) {
         try {
-            String response = authService.loginSentMail(companyLogin);
-            return response != null ? new ResponseEntity<>(response, HttpStatus.OK) :
-                    new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return new ResponseEntity<>("", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @PostMapping("/verify-login")
-    public ResponseEntity<AuthResponse> verifyLogin(@RequestBody CompanyLoginVerify companyLoginVerify) {
-        try {
-            return new ResponseEntity<>(authService.verifyOtp(companyLoginVerify), HttpStatus.ACCEPTED);
-        } catch (Exception ex) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
+            System.out.println(companyLogin);
+            return new ResponseEntity<>(authService.login(companyLogin), HttpStatus.ACCEPTED);
+        } catch (NullDataException | EmptyDataException ex) {
+            throw new NullDataException("Data can't be null or empty");
+        } catch (RuntimeException runtimeException) {
+            throw new RuntimeException();
         }
     }
 
