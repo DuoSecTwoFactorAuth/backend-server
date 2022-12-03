@@ -68,7 +68,7 @@ public class AuthController {
         } catch (NullDataException | EmptyDataException ex) {
             throw new NullDataException("Data can't be null or empty");
         } catch (RuntimeException runtimeException) {
-            throw new RuntimeException();
+            throw new RuntimeException(runtimeException.getMessage());
         }
     }
 
