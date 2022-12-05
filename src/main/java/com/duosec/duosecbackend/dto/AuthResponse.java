@@ -14,5 +14,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class AuthResponse {
     private String companyUniqueId;
+    private String companyName;
     private String token;
 }
