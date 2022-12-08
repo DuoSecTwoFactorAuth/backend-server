@@ -10,6 +10,7 @@ import com.duosec.duosecbackend.model.CompanyCreds;
 import com.duosec.duosecbackend.model.CompanyEmployee;
 import com.duosec.duosecbackend.utils.CreateJwtToken;
 import com.duosec.duosecbackend.utils.ExtensionFunction;
+import com.duosec.duosecbackend.utils.RandomOTP;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.duosec.backendlibrary.HMACAlgorithm;
 import org.duosec.backendlibrary.SecretGenerator;
@@ -50,13 +51,14 @@ public class DashboardService {
         CreateJwtToken createJwtToken = new CreateJwtToken();
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
                 companyCreds.getAlgorithm());
+        String recoveryCode = new RandomOTP().generateRecoveryCode(12);
         CompanyEmployee companyEmployee = new CompanyEmployee(
                 addEmployeeData.getCompanyUniqueId(),
                 addEmployeeData.getEmployeeId(),
                 addEmployeeData.getName(),
                 addEmployeeData.getEmailId(),
                 addEmployeeData.getPhoneNumber(),
-                date, secret, employeeUniqueIdHex, jwtToken);
+                date, secret, employeeUniqueIdHex, jwtToken, recoveryCode);
         dashboardModel.save(companyEmployee);
     }
 
@@ -69,6 +71,7 @@ public class DashboardService {
         CreateJwtToken createJwtToken = new CreateJwtToken();
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
                 companyCreds.getAlgorithm());
+        String recoveryCode = new RandomOTP().generateRecoveryCode(12);
         CompanyEmployee companyEmployee = new CompanyEmployee(
                 companyUniqueId,
                 addEmployeeDataAPI.getEmployeeId(),
@@ -76,7 +79,7 @@ public class DashboardService {
                 addEmployeeDataAPI.getEmailId(),
                 addEmployeeDataAPI.getPhoneNumber(),
                 date,
-                secret, employeeUniqueIdHex, jwtToken);
+                secret, employeeUniqueIdHex, jwtToken, recoveryCode);
         dashboardModel.save(companyEmployee);
         return "Data Saved";
 //        TODO Send mail to the user
@@ -165,9 +168,9 @@ public class DashboardService {
         CompanyEmployee companyEmployee = dashboardModel.findByEmployeeUniqueIdHex(companyEmployeeHash);
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
 
-        if (Duration.between(today, companyEmployee.getSecretTime()).toMillis() > 0)
-            return null;
-        return companyEmployee.getEmployeeUniqueIdHex();
+//        if (Duration.between(today, companyEmployee.getSecretTime()).toMillis() > 0)
+//            return null;
+        return companyEmployee.getJwtToken();
     }
 
     public Boolean verifyTOTP(String companyId, String employeeId, String totp) {
@@ -193,5 +196,28 @@ public class DashboardService {
         TOTP totpObj = builder.build();
 
         return totpObj.verify(totp, 2);
+    }
+
+    public String getRecoveryCode(RecoveryCodeRequest recoveryCodeRequest) {
+        ExtensionFunction extensionFunction = new ExtensionFunction();
+        if (extensionFunction.isNull(recoveryCodeRequest.getCompanyHexCode()))
+            throw new NullDataException("CompanyUniqueId can't be Null");
+
+        if (recoveryCodeRequest.getCompanyHexCode().isEmpty())
+            throw new EmptyDataException("CompanyUniqueId can't be Empty");
+
+        try {
+            CompanyEmployee companyEmployee = dashboardModel.findByEmployeeUniqueIdHex(recoveryCodeRequest.getCompanyHexCode());
+            if (recoveryCodeRequest.isGenerateRecoveryCode()) {
+                companyEmployee.setRecoveryCode(new RandomOTP().generateRecoveryCode(12));
+                dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+                dashboardModel.save(companyEmployee);
+//            TODO: Mail Service (API Key changed)
+                return companyEmployee.getRecoveryCode();
+            }
+            return companyEmployee.getRecoveryCode();
+        } catch (DataException dataException) {
+            throw new DataException("Can't get Recovery Code");
+        }
     }
 }

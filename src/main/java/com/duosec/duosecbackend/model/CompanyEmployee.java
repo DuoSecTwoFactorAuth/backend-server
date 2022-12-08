@@ -26,8 +26,11 @@ public class CompanyEmployee {
     private LocalDateTime secretTime;
     private String employeeUniqueIdHex;
     private String jwtToken;
+    private String recoveryCode;
 
-    public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber, LocalDateTime secretTime, byte[] secret, String employeeUniqueIdHex, String jwtToken) {
+    public CompanyEmployee(String companyUniqueId, String employeeId, String name, String emailId, String phoneNumber,
+                           LocalDateTime secretTime, byte[] secret, String employeeUniqueIdHex, String jwtToken,
+                           String recoveryCode) {
         this.companyUniqueId = companyUniqueId;
         this.employeeId = employeeId;
         this.name = name;
@@ -37,5 +40,6 @@ public class CompanyEmployee {
         this.secret = secret;
         this.employeeUniqueIdHex = employeeUniqueIdHex;
         this.jwtToken = jwtToken;
+        this.recoveryCode = recoveryCode;
     }
 }
