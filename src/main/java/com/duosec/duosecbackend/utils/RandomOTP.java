@@ -25,4 +25,11 @@ public class RandomOTP {
             sb.append(AB.charAt(rnd.nextInt(AB.length())));
         return sb.toString();
     }
+
+    public String generateRecoveryCode(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++)
+            sb.append(AB.charAt(rnd.nextInt(AB.length())));
+        return sb.toString();
+    }
 }

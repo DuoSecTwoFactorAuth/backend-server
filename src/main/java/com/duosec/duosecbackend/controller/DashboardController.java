@@ -101,4 +101,18 @@ public class DashboardController {
             throw runtimeException;
         }
     }
+
+    @PostMapping("/get-recovery-code")
+    public ResponseEntity<RecoveryCodeResponse> getRecoveryCode(@RequestBody RecoveryCodeRequest recoveryCodeRequest) {
+        try {
+            return new ResponseEntity<>(new RecoveryCodeResponse(dashboardService.getRecoveryCode(recoveryCodeRequest)), HttpStatus.OK);
+        } catch (NullDataException nullDataException) {
+            throw new NullDataException("ApiKeyRequest can't be Null");
+        } catch (EmptyDataException emptyDataException) {
+            throw new EmptyDataException("ApiKeyRequest can't be Null");
+        } catch (RuntimeException runtimeException) {
+            System.out.println(runtimeException);
+            throw new RuntimeException("Error");
+        }
+    }
 }
