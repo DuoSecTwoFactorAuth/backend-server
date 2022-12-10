@@ -50,7 +50,7 @@ public class DashboardService {
         String employeeUniqueIdHex = DigestUtils.sha256Hex(companyCreds.getCompanyUniqueId() + addEmployeeData.getEmployeeId());
         CreateJwtToken createJwtToken = new CreateJwtToken();
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
-                companyCreds.getAlgorithm());
+                companyCreds.getAlgorithm(), companyCreds.getCompanyName(), employeeUniqueIdHex);
         String recoveryCode = new RandomOTP().generateRecoveryCode(12);
         CompanyEmployee companyEmployee = new CompanyEmployee(
                 addEmployeeData.getCompanyUniqueId(),
@@ -70,7 +70,7 @@ public class DashboardService {
         String employeeUniqueIdHex = DigestUtils.sha256Hex(companyCreds.getCompanyUniqueId() + addEmployeeDataAPI.getEmployeeId());
         CreateJwtToken createJwtToken = new CreateJwtToken();
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
-                companyCreds.getAlgorithm());
+                companyCreds.getAlgorithm(), companyCreds.getCompanyName(), employeeUniqueIdHex);
         String recoveryCode = new RandomOTP().generateRecoveryCode(12);
         CompanyEmployee companyEmployee = new CompanyEmployee(
                 companyUniqueId,
