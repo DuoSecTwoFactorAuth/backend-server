@@ -220,4 +220,23 @@ public class DashboardService {
             throw new DataException("Can't get Recovery Code");
         }
     }
+
+    public boolean verifyRecoveryCode(RecoveryCodeData recoveryCodeData) {
+        ExtensionFunction extensionFunction = new ExtensionFunction();
+        if (extensionFunction.isNull(recoveryCodeData.getCompanyID()) || extensionFunction.isNull(recoveryCodeData.getEmployeeID()) || extensionFunction.isNull(recoveryCodeData.getRecoveryCode()))
+            throw new NullDataException("Data can't be null");
+
+        if (recoveryCodeData.getCompanyID().isEmpty() || recoveryCodeData.getEmployeeID().isEmpty() || recoveryCodeData.getRecoveryCode().isEmpty())
+            throw new EmptyDataException("Data can't be empty");
+
+        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeIdAndCompanyUniqueId(recoveryCodeData.getEmployeeID(), recoveryCodeData.getCompanyID()).get();
+
+        if (companyEmployee.getRecoveryCode().equals(recoveryCodeData.getRecoveryCode())) {
+            companyEmployee.setRecoveryCode(new RandomOTP().generateRecoveryCode(12));
+            dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+            dashboardModel.save(companyEmployee);
+            return true;
+        }
+        return false;
+    }
 }

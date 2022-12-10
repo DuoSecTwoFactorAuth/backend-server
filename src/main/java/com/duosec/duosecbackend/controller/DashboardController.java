@@ -115,4 +115,15 @@ public class DashboardController {
             throw new RuntimeException("Error");
         }
     }
+
+    @PostMapping("/verify-recovery-code")
+    public ResponseEntity<Boolean> verifyRecoveryCode(@RequestBody RecoveryCodeData recoveryCodeData) {
+        try {
+            return new ResponseEntity<>(dashboardService.verifyRecoveryCode(recoveryCodeData), HttpStatus.ACCEPTED);
+        } catch (NullDataException | EmptyDataException exception) {
+            throw new NullDataException("Data can't be empty or null");
+        } catch (RuntimeException exception) {
+            throw new RuntimeException();
+        }
+    }
 }
