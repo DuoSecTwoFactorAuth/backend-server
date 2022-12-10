@@ -239,4 +239,27 @@ public class DashboardService {
         }
         return false;
     }
+
+    public String regenerateJwtToken(RegenerateJwtTokenRequest regenerateJwtTokenRequest) {
+        ExtensionFunction extensionFunction = new ExtensionFunction();
+        if (extensionFunction.isNull(regenerateJwtTokenRequest.getCompanyHex()))
+            throw new NullDataException("Data can't be null");
+
+        if (regenerateJwtTokenRequest.getCompanyHex().isEmpty())
+            throw new NullDataException("Data can't be empty");
+
+        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeUniqueIdHex(regenerateJwtTokenRequest.getCompanyHex());
+
+        byte[] secret = SecretGenerator.generate();
+        companyEmployee.setSecret(secret);
+        CreateJwtToken createJwtToken = new CreateJwtToken();
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyEmployee.getCompanyUniqueId()).get();
+        dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+        String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
+                companyCreds.getAlgorithm(), companyCreds.getCompanyName(), companyEmployee.getEmployeeUniqueIdHex());
+        companyEmployee.setJwtToken(jwtToken);
+        dashboardModel.save(companyEmployee);
+
+        return companyEmployee.getJwtToken();
+    }
 }

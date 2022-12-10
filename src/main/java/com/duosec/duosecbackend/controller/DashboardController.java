@@ -126,4 +126,15 @@ public class DashboardController {
             throw new RuntimeException();
         }
     }
+
+    @PostMapping("regenerate-jwt-token")
+    public ResponseEntity<RegenerateJwtTokenResponse> regenerateJwtToken(@RequestBody RegenerateJwtTokenRequest regenerateJwtTokenRequest) {
+        try {
+            return new ResponseEntity<>(new RegenerateJwtTokenResponse(dashboardService.regenerateJwtToken(regenerateJwtTokenRequest)), HttpStatus.ACCEPTED);
+        } catch (NullDataException | EmptyDataException exception) {
+            throw new NullDataException("Data can't be Null or Empty");
+        } catch (RuntimeException exception) {
+            throw new RuntimeException(exception.getMessage());
+        }
+    }
 }
