@@ -85,15 +85,15 @@ public class DashboardService {
 //        TODO Send mail to the user
     }
 
-    public String deleteEmployee(DeleteEmployeeData deleteEmployeeData) throws NullDataException, EmptyDataException, DataException {
+    public String deleteEmployee(CompanyEmployeeIdentifier companyEmployeeIdentifier) throws NullDataException, EmptyDataException, DataException {
         ExtensionFunction extensionFunction = new ExtensionFunction();
-        if (extensionFunction.isNull(deleteEmployeeData.getEmployeeId()) || extensionFunction.isNull(deleteEmployeeData.getCompanyUniqueId()))
+        if (extensionFunction.isNull(companyEmployeeIdentifier.getEmployeeId()) || extensionFunction.isNull(companyEmployeeIdentifier.getCompanyUniqueId()))
             throw new EmptyDataException("Delete Employee Can't be Null");
-        if (deleteEmployeeData.getEmployeeId().isEmpty() || deleteEmployeeData.getCompanyUniqueId().isEmpty())
+        if (companyEmployeeIdentifier.getEmployeeId().isEmpty() || companyEmployeeIdentifier.getCompanyUniqueId().isEmpty())
             throw new EmptyDataException("Delete Employee Can't be Empty");
 
         try {
-            dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(deleteEmployeeData.getEmployeeId(), deleteEmployeeData.getCompanyUniqueId());
+            dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployeeIdentifier.getEmployeeId(), companyEmployeeIdentifier.getCompanyUniqueId());
             return "Data Deleted";
         } catch (DataException dataException) {
             throw new DataException("Data Not Deleted");
@@ -261,5 +261,18 @@ public class DashboardService {
         dashboardModel.save(companyEmployee);
 
         return companyEmployee.getJwtToken();
+    }
+
+    public void renewEmployeeSecret(CompanyEmployeeIdentifier companyEmployeeIdentifier) {
+        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeIdAndCompanyUniqueId(companyEmployeeIdentifier.getEmployeeId(), companyEmployeeIdentifier.getCompanyUniqueId()).get();
+        byte[] secret = SecretGenerator.generate();
+        companyEmployee.setSecret(secret);
+        CreateJwtToken createJwtToken = new CreateJwtToken();
+        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyEmployee.getCompanyUniqueId()).get();
+        dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+        String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
+                companyCreds.getAlgorithm(), companyCreds.getCompanyName(), companyEmployee.getEmployeeUniqueIdHex());
+        companyEmployee.setJwtToken(jwtToken);
+        dashboardModel.save(companyEmployee);
     }
 }
