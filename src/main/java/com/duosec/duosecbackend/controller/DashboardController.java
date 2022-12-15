@@ -24,7 +24,7 @@ public class DashboardController {
     @Autowired
     private DashboardService dashboardService;
 
-    @PostMapping("/add-employee-from -ui")
+    @PostMapping("/add-employee-from-ui")
     public ResponseEntity<String> addEmployee(@RequestBody AddEmployeeData addEmployeeData) {
         try {
             dashboardService.addEmployee(addEmployeeData);
@@ -47,10 +47,10 @@ public class DashboardController {
         }
     }
 
-    @DeleteMapping("/delete-employee-from -ui")
-    public ResponseEntity<String> deleteEmployeeFromUi(@RequestBody DeleteEmployeeData deleteEmployeeData) {
+    @DeleteMapping("/delete-employee-from-ui")
+    public ResponseEntity<String> deleteEmployeeFromUi(@RequestBody CompanyEmployeeIdentifier companyEmployeeIdentifier) {
         try {
-            return new ResponseEntity<>(dashboardService.deleteEmployee(deleteEmployeeData), HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(dashboardService.deleteEmployee(companyEmployeeIdentifier), HttpStatus.ACCEPTED);
         } catch (NullDataException | EmptyDataException | DataException exception) {
             return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_MODIFIED);
         } catch (RuntimeException runtimeException) {
@@ -135,6 +135,18 @@ public class DashboardController {
             throw new NullDataException("Data can't be Null or Empty");
         } catch (RuntimeException exception) {
             throw new RuntimeException(exception.getMessage());
+        }
+    }
+
+    @PostMapping("/renew-employee-secret")
+    public ResponseEntity<String> renewEmployeeSecret(@RequestBody CompanyEmployeeIdentifier companyEmployeeIdentifier) {
+        try {
+            dashboardService.renewEmployeeSecret(companyEmployeeIdentifier);
+            return new ResponseEntity<>("Secret Renewed", HttpStatus.ACCEPTED);
+        } catch (NullDataException | EmptyDataException | DataException exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_MODIFIED);
+        } catch (RuntimeException runtimeException) {
+            return new ResponseEntity<>(runtimeException.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

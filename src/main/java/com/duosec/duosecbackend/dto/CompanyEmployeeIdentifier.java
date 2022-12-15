@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class DeleteEmployeeData {
+public class CompanyEmployeeIdentifier {
     private String companyUniqueId;
     private String employeeId;
 }
