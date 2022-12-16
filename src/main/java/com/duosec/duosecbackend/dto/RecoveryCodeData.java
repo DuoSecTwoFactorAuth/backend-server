@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class RecoveryCodeData {
     private String recoveryCode;
-    private String companyID;
+    private String apiKey;
     private String employeeID;
 }

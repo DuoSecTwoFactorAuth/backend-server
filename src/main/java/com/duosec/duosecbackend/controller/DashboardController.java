@@ -96,7 +96,7 @@ public class DashboardController {
     @PostMapping("/verify-totp")
     public ResponseEntity<?> verifyTOTP(@RequestBody TOTPData totpData) {
         try {
-            return new ResponseEntity<>(dashboardService.verifyTOTP(totpData.getCompanyID(), totpData.getEmployeeID(), totpData.getTotp()), HttpStatus.OK);
+            return new ResponseEntity<>(dashboardService.verifyTOTP(totpData.getApiKey(), totpData.getEmployeeID(), totpData.getTotp()), HttpStatus.OK);
         } catch (RuntimeException runtimeException) {
             throw runtimeException;
         }
