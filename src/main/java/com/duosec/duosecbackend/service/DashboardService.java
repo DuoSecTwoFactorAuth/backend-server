@@ -93,7 +93,7 @@ public class DashboardService {
             throw new EmptyDataException("Delete Employee Can't be Empty");
 
         try {
-            dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployeeIdentifier.getEmployeeId(), companyEmployeeIdentifier.getCompanyUniqueId());
+            dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployeeIdentifier.getEmployeeId(), companyEmployeeIdentifier.getCompanyUniqueId());
             return "Data Deleted";
         } catch (DataException dataException) {
             throw new DataException("Data Not Deleted");
@@ -109,7 +109,7 @@ public class DashboardService {
 
         try {
             String companyUniqueId = authModel.findByApiKey(deleteEmployeeDataAPI.getApiKey()).getCompanyUniqueId();
-            dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(deleteEmployeeDataAPI.getEmployeeId(), companyUniqueId);
+            dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(deleteEmployeeDataAPI.getEmployeeId(), companyUniqueId);
             return "Data Deleted";
         } catch (DataException dataException) {
             throw new DataException("Data Not Saved");
@@ -173,9 +173,10 @@ public class DashboardService {
         return companyEmployee.getJwtToken();
     }
 
-    public Boolean verifyTOTP(String companyId, String employeeId, String totp) {
-        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyId).get();
-        byte[] secret = dashboardModel.findByEmployeeIdAndCompanyUniqueId(employeeId, companyId).get().getSecret();
+    public Boolean verifyTOTP(String apiKey, String employeeId, String totp) {
+        CompanyCreds companyCreds = authModel.findByApiKey(apiKey);
+        byte[] secret = dashboardModel.findByEmployeeIdAndCompanyUniqueId(employeeId, companyCreds.getCompanyUniqueId()).get().getSecret();
+
 
         TOTP.Builder builder = new TOTP.Builder(secret);
         String algorithm = companyCreds.getAlgorithm();
@@ -210,7 +211,7 @@ public class DashboardService {
             CompanyEmployee companyEmployee = dashboardModel.findByEmployeeUniqueIdHex(recoveryCodeRequest.getCompanyHexCode());
             if (recoveryCodeRequest.isGenerateRecoveryCode()) {
                 companyEmployee.setRecoveryCode(new RandomOTP().generateRecoveryCode(12));
-                dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+                dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
                 dashboardModel.save(companyEmployee);
 //            TODO: Mail Service (API Key changed)
                 return companyEmployee.getRecoveryCode();
@@ -223,17 +224,18 @@ public class DashboardService {
 
     public boolean verifyRecoveryCode(RecoveryCodeData recoveryCodeData) {
         ExtensionFunction extensionFunction = new ExtensionFunction();
-        if (extensionFunction.isNull(recoveryCodeData.getCompanyID()) || extensionFunction.isNull(recoveryCodeData.getEmployeeID()) || extensionFunction.isNull(recoveryCodeData.getRecoveryCode()))
+        if (extensionFunction.isNull(recoveryCodeData.getApiKey()) || extensionFunction.isNull(recoveryCodeData.getEmployeeID()) || extensionFunction.isNull(recoveryCodeData.getRecoveryCode()))
             throw new NullDataException("Data can't be null");
 
-        if (recoveryCodeData.getCompanyID().isEmpty() || recoveryCodeData.getEmployeeID().isEmpty() || recoveryCodeData.getRecoveryCode().isEmpty())
+        if (recoveryCodeData.getApiKey().isEmpty() || recoveryCodeData.getEmployeeID().isEmpty() || recoveryCodeData.getRecoveryCode().isEmpty())
             throw new EmptyDataException("Data can't be empty");
 
-        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeIdAndCompanyUniqueId(recoveryCodeData.getEmployeeID(), recoveryCodeData.getCompanyID()).get();
+        CompanyCreds companyCreds = authModel.findByApiKey(recoveryCodeData.getApiKey());
+        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeIdAndCompanyUniqueId(recoveryCodeData.getEmployeeID(), companyCreds.getCompanyUniqueId()).get();
 
         if (companyEmployee.getRecoveryCode().equals(recoveryCodeData.getRecoveryCode())) {
             companyEmployee.setRecoveryCode(new RandomOTP().generateRecoveryCode(12));
-            dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+            dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
             dashboardModel.save(companyEmployee);
             return true;
         }
@@ -254,7 +256,7 @@ public class DashboardService {
         companyEmployee.setSecret(secret);
         CreateJwtToken createJwtToken = new CreateJwtToken();
         CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyEmployee.getCompanyUniqueId()).get();
-        dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+        dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
                 companyCreds.getAlgorithm(), companyCreds.getCompanyName(), companyEmployee.getEmployeeUniqueIdHex());
         companyEmployee.setJwtToken(jwtToken);
@@ -269,7 +271,7 @@ public class DashboardService {
         companyEmployee.setSecret(secret);
         CreateJwtToken createJwtToken = new CreateJwtToken();
         CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyEmployee.getCompanyUniqueId()).get();
-        dashboardModel.deleteByEmployeeIdAAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+        dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
                 companyCreds.getAlgorithm(), companyCreds.getCompanyName(), companyEmployee.getEmployeeUniqueIdHex());
         companyEmployee.setJwtToken(jwtToken);

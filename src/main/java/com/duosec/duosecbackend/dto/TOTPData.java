@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TOTPData {
     private String totp;
-    private String companyID;
+    private String apiKey;
     private String employeeID;
 }
