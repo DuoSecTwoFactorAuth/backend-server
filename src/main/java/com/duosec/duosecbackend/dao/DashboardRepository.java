@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface DashboardModel extends MongoRepository<CompanyEmployee, String> {
+public interface DashboardRepository extends MongoRepository<CompanyEmployee, String> {
 
     //    @Query(value = "{$and :[{employeeId :  ?0}, {companyUniqueId: ?1}]}", delete = true)
     void deleteByEmployeeIdAndCompanyUniqueId(String employeeId, String companyUniqueId);

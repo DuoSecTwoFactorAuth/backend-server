@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface AuthModel extends MongoRepository<CompanyCreds, Integer> {
+public interface AuthRepository extends MongoRepository<CompanyCreds, Integer> {
     @Query("{companyUniqueId :  ?0}")
     Optional<CompanyCreds> findByCompanyUniqueId(String uniqueId);
 

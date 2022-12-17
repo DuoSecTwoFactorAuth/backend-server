@@ -1,6 +1,6 @@
 package com.duosec.duosecbackend.service;
 
-import com.duosec.duosecbackend.dao.AuthModel;
+import com.duosec.duosecbackend.dao.AuthRepository;
 import com.duosec.duosecbackend.dto.ApiKeyRequest;
 import com.duosec.duosecbackend.dto.ChangePasswordModel;
 import com.duosec.duosecbackend.exception.DataException;
@@ -22,7 +22,7 @@ import java.util.Objects;
 @Service
 public class SettingService {
     @Autowired
-    private AuthModel authModel;
+    private AuthRepository authRepository;
 
     public Boolean changePassword(ChangePasswordModel changePasswordModel) throws EmptyDataException, NullDataException, DataException {
         ExtensionFunction extensionFunction = new ExtensionFunction();
@@ -40,10 +40,10 @@ public class SettingService {
     }
 
     private boolean updatePassword(String companyUniqueId, String newPassword, String oldPassword) {
-        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyUniqueId).get();
+        CompanyCreds companyCreds = authRepository.findByCompanyUniqueId(companyUniqueId).get();
         if (Objects.equals(companyCreds.getPassword(), oldPassword)) {
             companyCreds.setPassword(newPassword);
-            authModel.save(companyCreds);
+            authRepository.save(companyCreds);
 //            mailService.sendEmail(companyCreds.getCompanyEmailId(), companyCreds.getCompanyName(), Constants.CHANGE_PASSWORD_SUBJECT, Constants.HELLO + Constants.CHANGE_PASSWORD_BODY);
             return true;
         }
@@ -60,13 +60,13 @@ public class SettingService {
 
         try {
             if (apiKeyRequest.isGenerateApiKey()) {
-                CompanyCreds companyCreds = authModel.findByCompanyUniqueId(apiKeyRequest.getCompanyUniqueId()).get();
+                CompanyCreds companyCreds = authRepository.findByCompanyUniqueId(apiKeyRequest.getCompanyUniqueId()).get();
                 companyCreds.setApiKey(new RandomOTP().generateApiKey());
-                authModel.save(companyCreds);
+                authRepository.save(companyCreds);
 //            TODO: Mail Service (API Key changed)
                 return companyCreds.getApiKey();
             }
-            return authModel.findByCompanyUniqueId(apiKeyRequest.getCompanyUniqueId()).get().getApiKey();
+            return authRepository.findByCompanyUniqueId(apiKeyRequest.getCompanyUniqueId()).get().getApiKey();
         } catch (DataException dataException) {
             throw new DataException("Can't get API Key");
         }
