@@ -1,7 +1,7 @@
 package com.duosec.duosecbackend.service;
 
-import com.duosec.duosecbackend.dao.AuthModel;
-import com.duosec.duosecbackend.dao.DashboardModel;
+import com.duosec.duosecbackend.dao.AuthRepository;
+import com.duosec.duosecbackend.dao.DashboardRepository;
 import com.duosec.duosecbackend.dto.*;
 import com.duosec.duosecbackend.exception.DataException;
 import com.duosec.duosecbackend.exception.EmptyDataException;
@@ -38,15 +38,15 @@ import java.util.*;
 public class DashboardService {
 
     @Autowired
-    private DashboardModel dashboardModel;
+    private DashboardRepository dashboardRepository;
 
     @Autowired
-    private AuthModel authModel;
+    private AuthRepository authRepository;
 
     public void addEmployee(AddEmployeeData addEmployeeData) {
         byte[] secret = SecretGenerator.generate();
         LocalDateTime date = LocalDateTime.now();
-        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(addEmployeeData.getCompanyUniqueId()).get();
+        CompanyCreds companyCreds = authRepository.findByCompanyUniqueId(addEmployeeData.getCompanyUniqueId()).get();
         String employeeUniqueIdHex = DigestUtils.sha256Hex(companyCreds.getCompanyUniqueId() + addEmployeeData.getEmployeeId());
         CreateJwtToken createJwtToken = new CreateJwtToken();
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
@@ -59,14 +59,14 @@ public class DashboardService {
                 addEmployeeData.getEmailId(),
                 addEmployeeData.getPhoneNumber(),
                 date, secret, employeeUniqueIdHex, jwtToken, recoveryCode);
-        dashboardModel.save(companyEmployee);
+        dashboardRepository.save(companyEmployee);
     }
 
     public String addEmployee(AddEmployeeDataAPI addEmployeeDataAPI) {
         byte[] secret = SecretGenerator.generate();
         LocalDateTime date = LocalDateTime.now();
-        String companyUniqueId = authModel.findByApiKey(addEmployeeDataAPI.getCompanyApiKey()).getCompanyUniqueId();
-        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyUniqueId).get();
+        String companyUniqueId = authRepository.findByApiKey(addEmployeeDataAPI.getCompanyApiKey()).getCompanyUniqueId();
+        CompanyCreds companyCreds = authRepository.findByCompanyUniqueId(companyUniqueId).get();
         String employeeUniqueIdHex = DigestUtils.sha256Hex(companyCreds.getCompanyUniqueId() + addEmployeeDataAPI.getEmployeeId());
         CreateJwtToken createJwtToken = new CreateJwtToken();
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
@@ -80,7 +80,7 @@ public class DashboardService {
                 addEmployeeDataAPI.getPhoneNumber(),
                 date,
                 secret, employeeUniqueIdHex, jwtToken, recoveryCode);
-        dashboardModel.save(companyEmployee);
+        dashboardRepository.save(companyEmployee);
         return "Data Saved";
 //        TODO Send mail to the user
     }
@@ -93,7 +93,7 @@ public class DashboardService {
             throw new EmptyDataException("Delete Employee Can't be Empty");
 
         try {
-            dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployeeIdentifier.getEmployeeId(), companyEmployeeIdentifier.getCompanyUniqueId());
+            dashboardRepository.deleteByEmployeeIdAndCompanyUniqueId(companyEmployeeIdentifier.getEmployeeId(), companyEmployeeIdentifier.getCompanyUniqueId());
             return "Data Deleted";
         } catch (DataException dataException) {
             throw new DataException("Data Not Deleted");
@@ -108,8 +108,8 @@ public class DashboardService {
             throw new EmptyDataException("Delete Employee Can't be Empty");
 
         try {
-            String companyUniqueId = authModel.findByApiKey(deleteEmployeeDataAPI.getApiKey()).getCompanyUniqueId();
-            dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(deleteEmployeeDataAPI.getEmployeeId(), companyUniqueId);
+            String companyUniqueId = authRepository.findByApiKey(deleteEmployeeDataAPI.getApiKey()).getCompanyUniqueId();
+            dashboardRepository.deleteByEmployeeIdAndCompanyUniqueId(deleteEmployeeDataAPI.getEmployeeId(), companyUniqueId);
             return "Data Deleted";
         } catch (DataException dataException) {
             throw new DataException("Data Not Saved");
@@ -140,9 +140,9 @@ public class DashboardService {
 
 
         if (employeeName == null || employeeName.equals(""))
-            companyEmployeePage = dashboardModel.findAllByCompanyUniqueId(companyUniqueId, paging);
+            companyEmployeePage = dashboardRepository.findAllByCompanyUniqueId(companyUniqueId, paging);
         else
-            companyEmployeePage = dashboardModel.findAllByNameAndCompanyUniqueId(employeeName, companyUniqueId, paging);
+            companyEmployeePage = dashboardRepository.findAllByNameAndCompanyUniqueId(employeeName, companyUniqueId, paging);
 
         List<CompanyEmployee> companyEmployeeList = companyEmployeePage.getContent();
 
@@ -165,7 +165,7 @@ public class DashboardService {
     }
 
     public String getQrData(String companyEmployeeHash) {
-        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeUniqueIdHex(companyEmployeeHash);
+        CompanyEmployee companyEmployee = dashboardRepository.findByEmployeeUniqueIdHex(companyEmployeeHash);
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
 
 //        if (Duration.between(today, companyEmployee.getSecretTime()).toMillis() > 0)
@@ -174,8 +174,8 @@ public class DashboardService {
     }
 
     public Boolean verifyTOTP(String apiKey, String employeeId, String totp) {
-        CompanyCreds companyCreds = authModel.findByApiKey(apiKey);
-        byte[] secret = dashboardModel.findByEmployeeIdAndCompanyUniqueId(employeeId, companyCreds.getCompanyUniqueId()).get().getSecret();
+        CompanyCreds companyCreds = authRepository.findByApiKey(apiKey);
+        byte[] secret = dashboardRepository.findByEmployeeIdAndCompanyUniqueId(employeeId, companyCreds.getCompanyUniqueId()).get().getSecret();
 
 
         TOTP.Builder builder = new TOTP.Builder(secret);
@@ -208,11 +208,11 @@ public class DashboardService {
             throw new EmptyDataException("CompanyUniqueId can't be Empty");
 
         try {
-            CompanyEmployee companyEmployee = dashboardModel.findByEmployeeUniqueIdHex(recoveryCodeRequest.getCompanyHexCode());
+            CompanyEmployee companyEmployee = dashboardRepository.findByEmployeeUniqueIdHex(recoveryCodeRequest.getCompanyHexCode());
             if (recoveryCodeRequest.isGenerateRecoveryCode()) {
                 companyEmployee.setRecoveryCode(new RandomOTP().generateRecoveryCode(12));
-                dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
-                dashboardModel.save(companyEmployee);
+                dashboardRepository.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+                dashboardRepository.save(companyEmployee);
 //            TODO: Mail Service (API Key changed)
                 return companyEmployee.getRecoveryCode();
             }
@@ -230,13 +230,13 @@ public class DashboardService {
         if (recoveryCodeData.getApiKey().isEmpty() || recoveryCodeData.getEmployeeID().isEmpty() || recoveryCodeData.getRecoveryCode().isEmpty())
             throw new EmptyDataException("Data can't be empty");
 
-        CompanyCreds companyCreds = authModel.findByApiKey(recoveryCodeData.getApiKey());
-        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeIdAndCompanyUniqueId(recoveryCodeData.getEmployeeID(), companyCreds.getCompanyUniqueId()).get();
+        CompanyCreds companyCreds = authRepository.findByApiKey(recoveryCodeData.getApiKey());
+        CompanyEmployee companyEmployee = dashboardRepository.findByEmployeeIdAndCompanyUniqueId(recoveryCodeData.getEmployeeID(), companyCreds.getCompanyUniqueId()).get();
 
         if (companyEmployee.getRecoveryCode().equals(recoveryCodeData.getRecoveryCode())) {
             companyEmployee.setRecoveryCode(new RandomOTP().generateRecoveryCode(12));
-            dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
-            dashboardModel.save(companyEmployee);
+            dashboardRepository.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+            dashboardRepository.save(companyEmployee);
             return true;
         }
         return false;
@@ -250,31 +250,31 @@ public class DashboardService {
         if (regenerateJwtTokenRequest.getCompanyHex().isEmpty())
             throw new NullDataException("Data can't be empty");
 
-        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeUniqueIdHex(regenerateJwtTokenRequest.getCompanyHex());
+        CompanyEmployee companyEmployee = dashboardRepository.findByEmployeeUniqueIdHex(regenerateJwtTokenRequest.getCompanyHex());
 
         byte[] secret = SecretGenerator.generate();
         companyEmployee.setSecret(secret);
         CreateJwtToken createJwtToken = new CreateJwtToken();
-        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyEmployee.getCompanyUniqueId()).get();
-        dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+        CompanyCreds companyCreds = authRepository.findByCompanyUniqueId(companyEmployee.getCompanyUniqueId()).get();
+        dashboardRepository.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
                 companyCreds.getAlgorithm(), companyCreds.getCompanyName(), companyEmployee.getEmployeeUniqueIdHex());
         companyEmployee.setJwtToken(jwtToken);
-        dashboardModel.save(companyEmployee);
+        dashboardRepository.save(companyEmployee);
 
         return companyEmployee.getJwtToken();
     }
 
     public void renewEmployeeSecret(CompanyEmployeeIdentifier companyEmployeeIdentifier) {
-        CompanyEmployee companyEmployee = dashboardModel.findByEmployeeIdAndCompanyUniqueId(companyEmployeeIdentifier.getEmployeeId(), companyEmployeeIdentifier.getCompanyUniqueId()).get();
+        CompanyEmployee companyEmployee = dashboardRepository.findByEmployeeIdAndCompanyUniqueId(companyEmployeeIdentifier.getEmployeeId(), companyEmployeeIdentifier.getCompanyUniqueId()).get();
         byte[] secret = SecretGenerator.generate();
         companyEmployee.setSecret(secret);
         CreateJwtToken createJwtToken = new CreateJwtToken();
-        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyEmployee.getCompanyUniqueId()).get();
-        dashboardModel.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
+        CompanyCreds companyCreds = authRepository.findByCompanyUniqueId(companyEmployee.getCompanyUniqueId()).get();
+        dashboardRepository.deleteByEmployeeIdAndCompanyUniqueId(companyEmployee.getEmployeeId(), companyEmployee.getCompanyUniqueId());
         String jwtToken = createJwtToken.createJwt(secret, companyCreds.getOtpRefreshDuration(),
                 companyCreds.getAlgorithm(), companyCreds.getCompanyName(), companyEmployee.getEmployeeUniqueIdHex());
         companyEmployee.setJwtToken(jwtToken);
-        dashboardModel.save(companyEmployee);
+        dashboardRepository.save(companyEmployee);
     }
 }

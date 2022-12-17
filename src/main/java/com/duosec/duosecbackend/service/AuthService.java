@@ -1,6 +1,6 @@
 package com.duosec.duosecbackend.service;
 
-import com.duosec.duosecbackend.dao.AuthModel;
+import com.duosec.duosecbackend.dao.AuthRepository;
 import com.duosec.duosecbackend.dto.AuthResponse;
 import com.duosec.duosecbackend.dto.CompanyLogin;
 import com.duosec.duosecbackend.dto.CompanyRegister;
@@ -32,18 +32,18 @@ import static com.duosec.duosecbackend.utils.Constants.EXPIRE_TOKEN_AFTER_MINUTE
 public class AuthService {
 
     @Autowired
-    private AuthModel authModel;
+    private AuthRepository authRepository;
 
     @Autowired
     private JwtGenerator jwtGenerator;
 
     public CompanyRegister getCompanyDetails(String uniqueId) {
-        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(uniqueId).get();
+        CompanyCreds companyCreds = authRepository.findByCompanyUniqueId(uniqueId).get();
         return new CompanyRegister(companyCreds.getCompanyName(), companyCreds.getCompanyEmailId());
     }
 
 
-    public void saveRegisterCompanyDetails(CompanyRegister companyRegister) throws EmptyDataException, NullDataException {
+    public String saveRegisterCompanyDetails(CompanyRegister companyRegister) throws EmptyDataException, NullDataException {
         if (companyRegister.getCompanyEmailId() == null || companyRegister.getCompanyName() == null)
             throw new EmptyDataException("CompanyEmailId or CompanyEmailId can't be null");
         if (companyRegister.getCompanyEmailId().equals("") || companyRegister.getCompanyName().equals(""))
@@ -54,9 +54,10 @@ public class AuthService {
         companyCreds.setExpireDate(LocalDateTime.now().plusMinutes(1));
         companyCreds.setCompanyName(companyRegister.getCompanyName());
         companyCreds.setCompanyEmailId(companyRegister.getCompanyEmailId());
-        authModel.save(companyCreds);
+        authRepository.save(companyCreds);
         companyCreds.setCompanyUniqueId(companyCreds.getId().toString());
-        authModel.save(companyCreds);
+        authRepository.save(companyCreds);
+        return companyCreds.getCompanyUniqueId();
     }
 
     public boolean storeDetails(CompanyRegisterComplete companyRegisterComplete) throws EmptyDataException, NullDataException {
@@ -67,14 +68,14 @@ public class AuthService {
         if (extensionFunction.isNull(companyRegisterComplete.getCompanyUniqueId()) || extensionFunction.isNull(companyRegisterComplete.getPassword()) || extensionFunction.isNull(companyRegisterComplete.getAlgorithm()))
             throw new NullDataException("CompanyUniqueId, Password, Algorithm can't be null");
 
-        CompanyCreds companyCreds = authModel.findByCompanyUniqueId(companyRegisterComplete.getCompanyUniqueId()).get();
+        CompanyCreds companyCreds = authRepository.findByCompanyUniqueId(companyRegisterComplete.getCompanyUniqueId()).get();
         if (companyCreds.getCompanyUniqueId().equals(companyRegisterComplete.getCompanyUniqueId()) && !companyCreds.isCompanyMailVerified()) {
             companyCreds.setAlgorithm(companyRegisterComplete.getAlgorithm());
             companyCreds.setOtpRefreshDuration(companyRegisterComplete.getOtpRefreshDuration());
             companyCreds.setPassword(companyRegisterComplete.getPassword());
             companyCreds.setCompanyMailVerified(true);
             companyCreds.setApiKey(new RandomOTP().generateApiKey());
-            authModel.save(companyCreds);
+            authRepository.save(companyCreds);
             return true;
         }
         return false;
@@ -89,7 +90,7 @@ public class AuthService {
             throw new EmptyDataException("CompanyEmailId or Password can't be empty");
 
         System.out.println(companyLogin);
-        CompanyCreds companyCreds = authModel.findByCompanyEmailId(companyLogin.getCompanyEmailId()).orElseThrow();
+        CompanyCreds companyCreds = authRepository.findByCompanyEmailId(companyLogin.getCompanyEmailId()).orElseThrow();
         if (companyCreds.getPassword().equals(companyLogin.getPassword())) {
             System.out.println("1");
             return new AuthResponse(companyCreds.getCompanyUniqueId(), companyCreds.getCompanyName(), jwtGenerator.generate(new JwtUser(companyCreds.getCompanyName(), "COMPANY_ADMIN")));
@@ -98,14 +99,14 @@ public class AuthService {
     }
 
     public String forgotPassword(String email) throws NullDataException {
-        Optional<CompanyCreds> userOptional = authModel.findByCompanyEmailId(email);
+        Optional<CompanyCreds> userOptional = authRepository.findByCompanyEmailId(email);
         if (userOptional.isEmpty()) {
             throw new NullDataException("Email Id field is Empty");
         }
         CompanyCreds companyCreds = userOptional.get();
         companyCreds.setToken(generateToken());
         companyCreds.setTokenCreationDate(String.valueOf(LocalDateTime.now()));
-        companyCreds = authModel.save(companyCreds);
+        companyCreds = authRepository.save(companyCreds);
 //        mailService.sendEmail(email, userOptional.get().getName(), Constants.FORGET_PASSWORD_SUBJECT, Constants.HELLO + Constants.FORGET_PASSWORD_BODY + " " + Constants.FRONTEND_URL + user.getToken());
         return companyCreds.getToken();
     }
@@ -130,7 +131,7 @@ public class AuthService {
             throw new EmptyDataException("Null token or password field");
         }
 
-        Optional<CompanyCreds> userOptional = Optional.ofNullable(authModel.findByToken(token));
+        Optional<CompanyCreds> userOptional = Optional.ofNullable(authRepository.findByToken(token));
         LocalDateTime tokenCreationDate = LocalDateTime.parse(userOptional.get().getTokenCreationDate());
         if (isTokenExpired(tokenCreationDate)) {
             throw new TokenExpiredException("Token Expired");
@@ -139,7 +140,7 @@ public class AuthService {
         companyCreds.setPassword(password);
         companyCreds.setToken(null);
         companyCreds.setTokenCreationDate(null);
-        authModel.save(companyCreds);
+        authRepository.save(companyCreds);
         return "Your password successfully updated.";
     }
 }
